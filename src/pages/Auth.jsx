@@ -31,7 +31,7 @@ export default function Auth() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '20px' }}>
       <div style={{ width: '100%', maxWidth: '380px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ width: '56px', height: '56px', background: '#1A1A1A', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'white', fontSize: '18px', fontWeight: '700', fontFamily: 'DM Mono' }}>BG</div>
+          <img src="/logo.png" alt="BaseGym BB" style={{ width: '80px', height: '80px', borderRadius: '50%', margin: '0 auto 16px', display: 'block', objectFit: 'cover' }} />
           <h1 style={{ fontSize: '22px', fontWeight: '600', marginBottom: '4px' }}>BaseGym BB</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Klientský portál · Rezervácie tréningov</p>
         </div>
