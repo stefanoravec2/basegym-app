@@ -15,14 +15,20 @@ export default function Auth() {
     e.preventDefault()
     setError(''); setSuccess('')
     setLoading(true)
-    if (mode === 'login') {
-      const { error } = await signIn(form.email, form.password)
-      if (error) setError('Nesprávny email alebo heslo.')
-    } else {
-      if (!form.fullName) { setError('Zadaj svoje meno.'); setLoading(false); return }
-      const { error } = await signUp(form.email, form.password, form.fullName)
-      if (error) setError('Registrácia zlyhala. Skús iný email.')
-      else setSuccess('Účet vytvorený! Môžeš sa prihlásiť.')
+    try {
+      if (mode === 'login') {
+        await signIn(form.email, form.password)
+      } else {
+        if (!form.fullName) { setError('Zadaj svoje meno.'); setLoading(false); return }
+        await signUp(form.email, form.password, form.fullName)
+        setSuccess('Účet vytvorený! Prihlasujem...')
+      }
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') setError('Tento email je už registrovaný.')
+      else if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') setError('Nesprávny email alebo heslo.')
+      else if (err.code === 'auth/weak-password') setError('Heslo musí mať aspoň 6 znakov.')
+      else if (err.code === 'auth/invalid-email') setError('Neplatný email.')
+      else setError('Chyba: ' + err.message)
     }
     setLoading(false)
   }
@@ -31,15 +37,15 @@ export default function Auth() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '20px' }}>
       <div style={{ width: '100%', maxWidth: '380px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <img src="/logo.png" alt="BaseGym BB" style={{ width: '80px', height: '80px', borderRadius: '50%', margin: '0 auto 16px', display: 'block', objectFit: 'cover' }} />
+          <img src="/logo.png" alt="BaseGym BB" style={{ width: '90px', height: '90px', borderRadius: '50%', margin: '0 auto 16px', display: 'block', objectFit: 'cover' }} />
           <h1 style={{ fontSize: '22px', fontWeight: '600', marginBottom: '4px' }}>BaseGym BB</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Klientský portál · Rezervácie tréningov</p>
         </div>
 
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', background: 'var(--border)', padding: '4px', borderRadius: 'var(--radius-full)' }}>
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', background: '#e5e5e5', padding: '4px', borderRadius: '999px' }}>
           {['login', 'register'].map(m => (
             <button key={m} onClick={() => { setMode(m); setError(''); setSuccess('') }} style={{
-              flex: 1, padding: '8px', borderRadius: 'var(--radius-full)', border: 'none',
+              flex: 1, padding: '8px', borderRadius: '999px', border: 'none',
               background: mode === m ? 'white' : 'none',
               color: mode === m ? 'var(--text)' : 'var(--text-muted)',
               fontWeight: mode === m ? '600' : '400', cursor: 'pointer', fontSize: '13px'
