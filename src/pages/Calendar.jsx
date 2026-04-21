@@ -15,18 +15,21 @@ export default function Calendar() {
   const [actionMsg, setActionMsg] = useState({ text: '', type: 'green' })
   const [expanded, setExpanded] = useState(null)
 
-  useEffect(() => { if (profile) loadData() }, [weekOffset, profile])
+  useEffect(() => { if (profile) loadData() }, [profile])
 
   async function loadData() {
     setLoading(true)
-    const start = getWeekStart(weekOffset)
-    const end = new Date(start); end.setDate(end.getDate() + 7)
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    const maxDate = new Date()
+    maxDate.setDate(maxDate.getDate() + 7)
+    maxDate.setHours(23, 59, 59, 0)
 
     const { data: tr } = await supabase
       .from('trainings')
       .select('*, reservations(id, client_firebase_uid, status, client_profiles(full_name))')
-      .gte('starts_at', start.toISOString())
-      .lt('starts_at', end.toISOString())
+      .gte('starts_at', now.toISOString())
+      .lte('starts_at', maxDate.toISOString())
       .order('starts_at')
     setTrainings(tr || [])
 
@@ -135,8 +138,17 @@ export default function Calendar() {
     loadData()
   }
 
-  const weekDays = getWeekDays()
   const today = new Date().toDateString()
+
+  // Groupuj tréningy podľa dňa
+  const byDay = trainings.reduce((acc, t) => {
+    const key = new Date(t.starts_at).toDateString()
+    if (!acc[key]) acc[key] = []
+    acc[key].push(t)
+    return acc
+  }, {})
+
+  const DAYS_SK2 = ['Ne','Po','Ut','St','Št','Pi','So']
 
   return (
     <div>
@@ -165,32 +177,30 @@ export default function Calendar() {
         </div>
       )}
 
-      {/* Week navigation */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <button className="btn" onClick={() => setWeekOffset(w => Math.max(0, w - 1))} disabled={weekOffset === 0} style={{ padding: '6px 14px' }}>← Predošlý</button>
-        <div style={{ textAlign: 'center', fontSize: '15px', fontWeight: '600' }}>
-          {weekDays[0].getDate()}. – {weekDays[6].getDate()}. {MONTHS_SK[weekDays[6].getMonth()]} {weekDays[6].getFullYear()}
-        </div>
-        <button className="btn" onClick={() => setWeekOffset(w => Math.min(1, w + 1))} disabled={weekOffset === 1} style={{ padding: '6px 14px' }}>Ďalší →</button>
+      <div style={{ fontSize: '15px', fontWeight: '600', marginBottom: '16px' }}>
+        Tréningy — najbližších 7 dní
       </div>
 
       {loading ? <p style={{ color: 'var(--text-muted)', padding: '40px 0', textAlign: 'center' }}>Načítavam...</p> : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {weekDays.map(day => {
-            const dayTrainings = trainings.filter(t => new Date(t.starts_at).toDateString() === day.toDateString())
+          {Object.keys(byDay).length === 0 && (
+            <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>
+              Žiadne tréningy v najbližších 7 dňoch
+            </p>
+          )}
+          {Object.entries(byDay).map(([dateStr, dayTrainings]) => {
+            const day = new Date(dateStr)
             const isToday = day.toDateString() === today
-            const isPast = day < new Date() && !isToday
             return (
-              <div key={day.toDateString()} style={{ opacity: isPast ? 0.5 : 1 }}>
+              <div key={dateStr}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: isToday ? '#1A1A1A' : 'var(--bg)', border: isToday ? 'none' : '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '10px', color: isToday ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)', lineHeight: 1 }}>{DAYS_SK[day.getDay()]}</span>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: isToday ? '#1A1A1A' : 'var(--bg)', border: isToday ? 'none' : '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ fontSize: '10px', color: isToday ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)', lineHeight: 1 }}>{DAYS_SK2[day.getDay()]}</span>
                     <span style={{ fontSize: '13px', fontWeight: '600', color: isToday ? 'white' : 'var(--text)', lineHeight: 1.2 }}>{day.getDate()}</span>
                   </div>
                   <div style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
-                    {day.toLocaleDateString('sk-SK', { weekday: 'long' })}
+                    {day.toLocaleDateString('sk-SK', { weekday: 'long', day: 'numeric', month: 'long' })}
                   </div>
-                  {dayTrainings.length === 0 && <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>Žiadne tréningy</span>}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '46px' }}>
                   {dayTrainings.map(t => {
@@ -220,7 +230,7 @@ export default function Calendar() {
                               reserved ? (
                                 <button onClick={() => cancel(t)} className="btn btn-red" style={{ fontSize: '12px', padding: '6px 14px' }}>Odhlásiť</button>
                               ) : (
-                                <button onClick={() => reserve(t)} className="btn btn-green" style={{ fontSize: '12px', padding: '6px 14px' }} disabled={full || !canReserve(t)}>
+                                <button onClick={() => reserve(t)} className="btn btn-green" style={{ fontSize: '12px', padding: '6px 14px' }} disabled={full}>
                                   {full ? 'Plné' : 'Prihlásiť'}
                                 </button>
                               )
@@ -229,11 +239,13 @@ export default function Calendar() {
                         </div>
                         {reserved && <div style={{ marginTop: '6px' }}><span className="badge badge-green">Prihlásený/á</span></div>}
                         {t.description && <div style={{ marginTop: '8px', fontSize: '12px', color: 'var(--text-muted)', borderTop: '1px solid var(--border)', paddingTop: '8px' }}>{t.description}</div>}
-                        {isExpanded && attendees.length > 0 && (
+                        {isExpanded && (
                           <div style={{ marginTop: '8px', borderTop: '1px solid var(--border)', paddingTop: '8px' }}>
                             <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>Prihlásení ({attendees.length})</div>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                              {attendees.map((r, i) => (
+                              {attendees.length === 0 ? (
+                                <span style={{ fontSize: '12px', color: 'var(--text-hint)' }}>Nikto nie je prihlásený</span>
+                              ) : attendees.map((r, i) => (
                                 <span key={i} style={{ fontSize: '12px', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '999px', padding: '3px 10px' }}>
                                   {r.client_profiles?.full_name || 'Člen'}
                                 </span>
