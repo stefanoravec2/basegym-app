@@ -26,6 +26,11 @@ function AppInner() {
         <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '54px', gap: '8px' }}>
           <img src="/logo.png" alt="BaseGym BB" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
           <span style={{ fontWeight: '600', fontSize: '14px', flex: 1 }}>BaseGym BB</span>
+          {profile?.full_name && (
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginRight: '4px' }}>
+              👋 {profile.full_name.split(' ')[0]}
+            </span>
+          )}
           <div style={{ display: 'flex', gap: '4px' }}>
             {[
               { id: 'calendar', label: 'Rezervácie', color: '#2D6A4F', bg: '#D8F3DC', border: '#2D6A4F' },
