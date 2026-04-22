@@ -12,16 +12,16 @@ export default function Profile() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const { data: cr } = await supabase.from('credits').select('*').eq('client_id', user.id).order('created_at', { ascending: false })
+    const { data: cr } = await supabase.from('credits').select('*').eq('client_firebase_uid', user.uid).order('created_at', { ascending: false })
     setCredits(cr || [])
 
-    const { data: lg } = await supabase.from('credit_logs').select('*').eq('client_id', user.id).order('created_at', { ascending: false }).limit(30)
+    const { data: lg } = await supabase.from('credit_logs').select('*').eq('client_firebase_uid', user.uid).order('created_at', { ascending: false }).limit(30)
     setLogs(lg || [])
 
     const { data: res } = await supabase
       .from('reservations')
       .select('*, trainings(title, starts_at)')
-      .eq('client_id', user.id)
+      .eq('client_firebase_uid', user.uid)
       .order('created_at', { ascending: false })
       .limit(20)
     setReservations(res || [])
@@ -43,7 +43,6 @@ export default function Profile() {
 
       {loading ? <p style={{ color: 'var(--text-muted)' }}>Načítavam...</p> : (
         <>
-          {/* Credit status */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '10px', marginBottom: '20px' }}>
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '14px' }}>
               <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Zostatok</div>
@@ -70,7 +69,6 @@ export default function Profile() {
             </div>
           )}
 
-          {/* Credit history */}
           <div className="card" style={{ padding: '0 20px', marginBottom: '16px' }}>
             <div style={{ padding: '14px 0 10px', borderBottom: '1px solid var(--border)', fontSize: '14px', fontWeight: '600' }}>História kreditov</div>
             {credits.length === 0 ? <p style={{ padding: '16px 0', color: 'var(--text-muted)', fontSize: '13px' }}>Žiadne záznamy</p> :
@@ -93,7 +91,6 @@ export default function Profile() {
             }
           </div>
 
-          {/* Transaction log */}
           <div className="card" style={{ padding: '0 20px' }}>
             <div style={{ padding: '14px 0 10px', borderBottom: '1px solid var(--border)', fontSize: '14px', fontWeight: '600' }}>Pohyby kreditov</div>
             {logs.length === 0 ? <p style={{ padding: '16px 0', color: 'var(--text-muted)', fontSize: '13px' }}>Žiadne záznamy</p> :
