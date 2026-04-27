@@ -1,11 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
-  onAuthStateChanged,
-  updateProfile
-} from 'firebase/auth'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, updateProfile } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 import { supabase } from '../lib/supabase'
 
@@ -31,36 +25,45 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function syncProfile(firebaseUser) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('client_profiles')
       .select('*')
       .eq('firebase_uid', firebaseUser.uid)
-      .single()
-    
+      .maybeSingle()
+
     if (data) {
       setProfile(data)
     } else {
-      const { data: newProfile } = await supabase
+      const { data: existing } = await supabase
         .from('client_profiles')
-        .insert({
-          firebase_uid: firebaseUser.uid,
-          full_name: firebaseUser.displayName || '',
-          email: firebaseUser.email
-        })
-        .select()
-        .single()
-      setProfile(newProfile)
+        .select('*')
+        .eq('email', firebaseUser.email)
+        .maybeSingle()
+
+      if (existing) {
+        await supabase
+          .from('client_profiles')
+          .update({ firebase_uid: firebaseUser.uid })
+          .eq('id', existing.id)
+        setProfile({ ...existing, firebase_uid: firebaseUser.uid })
+      } else {
+        const { data: newProfile } = await supabase
+          .from('client_profiles')
+          .insert({
+            firebase_uid: firebaseUser.uid,
+            full_name: firebaseUser.displayName || '',
+            email: firebaseUser.email
+          })
+          .select()
+          .maybeSingle()
+        setProfile(newProfile)
+      }
     }
   }
 
   async function signUp(email, password, fullName) {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
     await updateProfile(userCredential.user, { displayName: fullName })
-    await supabase.from('client_profiles').insert({
-      firebase_uid: userCredential.user.uid,
-      full_name: fullName,
-      email
-    })
     return userCredential
   }
 
