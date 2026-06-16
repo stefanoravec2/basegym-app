@@ -4,81 +4,77 @@ import { useAuth } from '../contexts/AuthContext'
 export default function Auth() {
   const { signIn, signUp } = useAuth()
   const [mode, setMode] = useState('login')
-  const [form, setForm] = useState({ fullName: '', email: '', password: '' })
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [nickname, setNickname] = useState('')
+  const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-
-  function update(f, v) { setForm(p => ({ ...p, [f]: v })) }
 
   async function handleSubmit(e) {
     e.preventDefault()
-    setError(''); setSuccess('')
+    setError('')
     setLoading(true)
     try {
       if (mode === 'login') {
-        await signIn(form.email, form.password)
+        await signIn(email, password)
       } else {
-        if (!form.fullName) { setError('Zadaj svoje meno.'); setLoading(false); return }
-        await signUp(form.email, form.password, form.fullName)
-        setSuccess('Účet vytvorený! Prihlasujem...')
+        if (!fullName.trim()) { setError('Zadaj meno'); setLoading(false); return }
+        if (!nickname.trim()) { setError('Zadaj prezývku'); setLoading(false); return }
+        await signUp(email, password, fullName, nickname, phone)
       }
     } catch (err) {
-      if (err.code === 'auth/email-already-in-use') setError('Tento email je už registrovaný.')
-      else if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found') setError('Nesprávny email alebo heslo.')
-      else if (err.code === 'auth/weak-password') setError('Heslo musí mať aspoň 6 znakov.')
-      else if (err.code === 'auth/invalid-email') setError('Neplatný email.')
-      else setError('Chyba: ' + err.message)
+      const msgs = {
+        'auth/user-not-found': 'Účet neexistuje.',
+        'auth/wrong-password': 'Nesprávne heslo.',
+        'auth/email-already-in-use': 'Email už je použitý.',
+        'auth/weak-password': 'Heslo musí mať aspoň 6 znakov.',
+        'auth/invalid-email': 'Neplatný email.',
+        'auth/invalid-credential': 'Nesprávny email alebo heslo.',
+      }
+      setError(msgs[err.code] || 'Chyba. Skús znova.')
     }
     setLoading(false)
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div style={{ width: '100%', maxWidth: '380px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <img src="/logo.png" alt="BaseGym BB" style={{ width: '90px', height: '90px', borderRadius: '50%', margin: '0 auto 16px', display: 'block', objectFit: 'cover' }} />
-          <h1 style={{ fontSize: '22px', fontWeight: '600', marginBottom: '4px' }}>BaseGym BB</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Klientský portál · Rezervácie tréningov</p>
+          <img src="/logo.png" alt="BaseGym" style={{ width: '72px', height: '72px', borderRadius: '50%', margin: '0 auto 12px', display: 'block' }} />
+          <h1 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text)' }}>BaseGym BB</h1>
+          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Rezervačný systém</p>
         </div>
-
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', background: '#e5e5e5', padding: '4px', borderRadius: '999px' }}>
-          {['login', 'register'].map(m => (
-            <button key={m} onClick={() => { setMode(m); setError(''); setSuccess('') }} style={{
-              flex: 1, padding: '8px', borderRadius: '999px', border: 'none',
-              background: mode === m ? 'white' : 'none',
-              color: mode === m ? 'var(--text)' : 'var(--text-muted)',
-              fontWeight: mode === m ? '600' : '400', cursor: 'pointer', fontSize: '13px'
-            }}>{m === 'login' ? 'Prihlásenie' : 'Registrácia'}</button>
-          ))}
-        </div>
-
-        <div className="card" style={{ padding: '24px' }}>
-          <form onSubmit={handleSubmit}>
+        <div style={{ background: 'white', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px' }}>
+          <div style={{ display: 'flex', marginBottom: '20px', background: 'var(--bg)', borderRadius: '10px', padding: '3px', gap: '3px' }}>
+            {['login', 'register'].map(m => (
+              <button key={m} onClick={() => { setMode(m); setError('') }} style={{
+                flex: 1, padding: '7px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                background: mode === m ? 'white' : 'transparent',
+                color: mode === m ? 'var(--text)' : 'var(--text-muted)',
+                fontWeight: mode === m ? '600' : '400', fontSize: '13px',
+                boxShadow: mode === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+              }}>{m === 'login' ? 'Prihlásenie' : 'Registrácia'}</button>
+            ))}
+          </div>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {mode === 'register' && (
-              <div className="form-group">
-                <label className="form-label">Meno a priezvisko *</label>
-                <input className="form-input" placeholder="Ján Novák" value={form.fullName} onChange={e => update('fullName', e.target.value)} />
-              </div>
+              <>
+                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Celé meno *</label><input className="input" type="text" placeholder="Ján Novák" value={fullName} onChange={e => setFullName(e.target.value)} required /></div>
+                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Prezývka (viditeľná v rezerváciách) *</label><input className="input" type="text" placeholder="@jano88" value={nickname} onChange={e => setNickname(e.target.value.replace('@', ''))} required /></div>
+                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Telefón</label><input className="input" type="tel" placeholder="+421 900 000 000" value={phone} onChange={e => setPhone(e.target.value)} /></div>
+              </>
             )}
-            <div className="form-group">
-              <label className="form-label">Email *</label>
-              <input className="form-input" type="email" placeholder="jan@email.sk" value={form.email} onChange={e => update('email', e.target.value)} required />
-            </div>
-            <div className="form-group" style={{ marginBottom: '20px' }}>
-              <label className="form-label">Heslo *</label>
-              <input className="form-input" type="password" placeholder="••••••••" value={form.password} onChange={e => update('password', e.target.value)} required />
-            </div>
-            {error && <div className="info-box info-red" style={{ marginBottom: '12px' }}>{error}</div>}
-            {success && <div className="info-box info-green" style={{ marginBottom: '12px' }}>{success}</div>}
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '11px' }} disabled={loading}>
-              {loading ? 'Načítavam...' : mode === 'login' ? 'Prihlásiť sa' : 'Vytvoriť účet'}
+            <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Email *</label><input className="input" type="email" placeholder="jan@email.sk" value={email} onChange={e => setEmail(e.target.value)} required /></div>
+            <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Heslo *</label><input className="input" type="password" placeholder="min. 6 znakov" value={password} onChange={e => setPassword(e.target.value)} required /></div>
+            {error && <div style={{ background: 'var(--red-bg)', color: 'var(--red)', padding: '10px 14px', borderRadius: '8px', fontSize: '13px' }}>{error}</div>}
+            <button type="submit" disabled={loading} style={{ background: '#2D6A4F', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: '600', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '4px' }}>
+              {loading ? 'Moment...' : mode === 'login' ? 'Prihlásiť sa' : 'Vytvoriť účet'}
             </button>
           </form>
         </div>
-        <p style={{ textAlign: 'center', color: 'var(--text-hint)', fontSize: '12px', marginTop: '20px' }}>
-          BaseGym Banská Bystrica
-        </p>
+        <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', marginTop: '16px' }}>Nemáš účet? Zaregistruj sa a potom kontaktuj trénera pre aktiváciu kreditov.</p>
       </div>
     </div>
   )
