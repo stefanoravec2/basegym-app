@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { trainerInfo } from '../lib/trainers'
 
 const MEMBERSHIP_TYPES = [
   { id: 'single', label: '1 kredit / 7 dní', credits: 1, days: 7, price: 8 },
@@ -240,16 +241,16 @@ export default function TrainerPanel() {
 
   const s = {
     card: { background: 'white', border: '1px solid var(--border)', borderRadius: '14px', padding: '16px 20px', marginBottom: '12px' },
-    btn: (color = '#1B4332', bg = '#D8F3DC') => ({ background: bg, color, border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }),
-    btnRed: { background: '#FEE2E2', color: '#B91C1C', border: 'none', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' },
-    input: { width: '100%', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', boxSizing: 'border-box', outline: 'none' },
+    btn: (color = 'var(--green-dark)', bg = 'var(--green-bg)') => ({ background: bg, color, border: 'none', borderRadius: '8px', padding: '8px 16px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }),
+    btnRed: { background: 'var(--red-bg)', color: 'var(--red)', border: 'none', borderRadius: '8px', padding: '6px 12px', cursor: 'pointer', fontSize: '12px', fontWeight: '500' },
+    input: { width: '100%', border: '1.5px solid var(--border-md)', borderRadius: '8px', padding: '8px 12px', fontSize: '14px', boxSizing: 'border-box', outline: 'none' },
     label: { fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' },
     tag: (bg, color) => ({ background: bg, color, fontSize: '12px', borderRadius: '20px', padding: '3px 10px', fontWeight: '500' }),
   }
 
   const tabs = [
-    { id: 'trainings', label: '📅 Tréningy' },
-    { id: 'credits', label: '💳 Kredity' },
+    { id: 'trainings', label: 'Tréningy' },
+    { id: 'credits', label: 'Kredity' },
   ]
 
   return (
@@ -258,15 +259,15 @@ export default function TrainerPanel() {
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
         {tabs.map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-            padding: '8px 20px', borderRadius: '999px', border: `1.5px solid ${activeTab === t.id ? '#D97706' : 'transparent'}`,
-            background: activeTab === t.id ? '#FEF3C7' : 'none', color: activeTab === t.id ? '#92400E' : 'var(--text-muted)',
+            padding: '8px 20px', borderRadius: '999px', border: `1.5px solid ${activeTab === t.id ? 'var(--green)' : 'transparent'}`,
+            background: activeTab === t.id ? 'var(--green-bg)' : 'none', color: activeTab === t.id ? 'var(--green-dark)' : 'var(--text-muted)',
             fontWeight: activeTab === t.id ? '600' : '400', fontSize: '13px', cursor: 'pointer'
           }}>{t.label}</button>
         ))}
       </div>
 
       {msg.text && (
-        <div style={{ padding: '12px 16px', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', fontWeight: '500', background: msg.type === 'red' ? '#FEE2E2' : '#D8F3DC', color: msg.type === 'red' ? '#B91C1C' : '#1B4332' }}>
+        <div className={`info-box ${msg.type === 'red' ? 'info-red' : 'info-green'}`} style={{ marginBottom: '16px', fontWeight: '500' }}>
           {msg.text}
         </div>
       )}
@@ -275,14 +276,14 @@ export default function TrainerPanel() {
       {activeTab === 'trainings' && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '700' }}>Nadchádzajúce tréningy</h2>
-            <button onClick={() => setShowNewTraining(!showNewTraining)} style={s.btn('#92400E', '#FEF3C7')}>
+            <h2 className="display" style={{ margin: 0, fontSize: '24px' }}>Nadchádzajúce tréningy</h2>
+            <button onClick={() => setShowNewTraining(!showNewTraining)} className={showNewTraining ? 'btn' : 'btn btn-green'} style={{ fontSize: '13px', padding: '8px 16px' }}>
               {showNewTraining ? '✕ Zavrieť' : '+ Nový tréning'}
             </button>
           </div>
 
           {showNewTraining && (
-            <div style={{ ...s.card, border: '1.5px solid #D97706', marginBottom: '20px' }}>
+            <div style={{ ...s.card, border: '1.5px solid var(--green)', marginBottom: '20px' }}>
               <h3 style={{ margin: '0 0 14px', fontSize: '15px', fontWeight: '600' }}>Nový tréning</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div style={{ gridColumn: '1/-1' }}>
@@ -318,7 +319,7 @@ export default function TrainerPanel() {
                   <input style={s.input} value={newTraining.description} onChange={e => setNewTraining(p => ({ ...p, description: e.target.value }))} placeholder="Napr. zamerane na silu..." />
                 </div>
               </div>
-              <button onClick={createTraining} style={{ ...s.btn('#1B4332', '#D8F3DC'), marginTop: '14px', width: '100%', padding: '10px' }}>
+              <button onClick={createTraining} className="btn btn-green" style={{ marginTop: '14px', width: '100%', padding: '10px' }}>
                 Vytvoriť tréning
               </button>
             </div>
@@ -326,7 +327,6 @@ export default function TrainerPanel() {
 
           {trainings.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', background: 'white', border: '1px solid var(--border)', borderRadius: '14px' }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📅</div>
               <p>Žiadne tréningy v najbližších 21 dňoch</p>
             </div>
           ) : (
@@ -334,8 +334,9 @@ export default function TrainerPanel() {
               const activeRes = (t.reservations || []).filter(r => r.status === 'active')
               const full = activeRes.length >= t.capacity
               const isSelected = selectedTraining?.id === t.id
+              const trainer = trainerInfo(t.trainer_firebase_uid)
               return (
-                <div key={t.id} style={{ ...s.card, border: isSelected ? '1.5px solid #D97706' : '1px solid var(--border)' }}>
+                <div key={t.id} style={{ ...s.card, border: isSelected ? '1.5px solid var(--green)' : '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '15px', fontWeight: '700', marginBottom: '4px' }}>{t.title}</div>
@@ -343,14 +344,13 @@ export default function TrainerPanel() {
                         {formatDT(t.starts_at)} {t.location ? `· ${t.location}` : ''}
                       </div>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        <span style={s.tag(full ? '#FEE2E2' : '#D8F3DC', full ? '#B91C1C' : '#1B4332')}>
-                          {activeRes.length}/{t.capacity} miest
-                        </span>
-                        <span style={s.tag('#F3F4F6', '#374151')}>{t.credits_cost || 1} kredit</span>
+                        {trainer && <span className="trainer-chip"><span className="emoji">{trainer.emoji}</span>{trainer.name}</span>}
+                        <span className="badge badge-amber">{t.credits_cost || 1} kredit</span>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button onClick={() => isSelected ? setSelectedTraining(null) : loadTrainingReservations(t)} style={s.btn('#92400E', '#FEF3C7')}>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                      <span className={`scoreboard ${full ? 'urgent' : ''}`}>{activeRes.length}/{t.capacity}</span>
+                      <button onClick={() => isSelected ? setSelectedTraining(null) : loadTrainingReservations(t)} className="btn" style={{ fontSize: '13px', padding: '8px 16px' }}>
                         {isSelected ? 'Zavrieť' : 'Spravovať'}
                       </button>
                       <button onClick={() => cancelTraining(t)} style={s.btnRed}>Zrušiť</button>
@@ -369,9 +369,9 @@ export default function TrainerPanel() {
                           {trainingReservations.map(r => {
                             const nick = r.client_profiles?.nickname || r.client_profiles?.full_name?.split(' ')[0] || 'Klient'
                             return (
-                              <span key={r.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F3F4F6', borderRadius: '20px', padding: '4px 10px 4px 12px', fontSize: '12px' }}>
+                              <span key={r.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg)', borderRadius: '20px', padding: '4px 10px 4px 12px', fontSize: '12px' }}>
                                 @{nick}
-                                <button onClick={() => removeReservation(r)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#B91C1C', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
+                                <button onClick={() => removeReservation(r)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)', fontSize: '14px', lineHeight: 1, padding: 0 }}>×</button>
                               </span>
                             )
                           })}
@@ -391,10 +391,10 @@ export default function TrainerPanel() {
                           <div style={{ border: '1px solid var(--border)', borderRadius: '8px', marginTop: '4px', overflow: 'hidden' }}>
                           {searchResults.map(c => (
                               <div key={c.id} onClick={() => addClientManually(c)} style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border)', fontSize: '13px', display: 'flex', justifyContent: 'space-between', background: 'white' }}
-                                onMouseOver={e => e.currentTarget.style.background = '#F9FAFB'}
+                                onMouseOver={e => e.currentTarget.style.background = 'var(--bg)'}
                                 onMouseOut={e => e.currentTarget.style.background = 'white'}>
                 <span><strong>{c.full_name}</strong> <span style={{ color: 'var(--text-muted)' }}>@{c.nickname}</span></span>
-                                <span style={{ color: '#2D6A4F', fontWeight: '600' }}>+ Pridať</span>
+                                <span style={{ color: 'var(--green)', fontWeight: '600' }}>+ Pridať</span>
                               </div>
                             ))}
                           </div>
@@ -412,7 +412,7 @@ export default function TrainerPanel() {
       {/* ── CREDITS TAB ── */}
       {activeTab === 'credits' && (
         <div>
-          <h2 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: '700' }}>Správa kreditov</h2>
+          <h2 className="display" style={{ margin: '0 0 16px', fontSize: '24px' }}>Správa kreditov</h2>
 
           {/* Client search */}
           <div style={s.card}>
@@ -427,7 +427,7 @@ export default function TrainerPanel() {
               <div style={{ border: '1px solid var(--border)', borderRadius: '8px', marginTop: '4px', overflow: 'hidden' }}>
                 {creditSearchResults.map(c => (
                   <div key={c.id} onClick={() => selectCreditClient(c)} style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border)', fontSize: '13px', background: 'white' }}
-                    onMouseOver={e => e.currentTarget.style.background = '#F9FAFB'}
+                    onMouseOver={e => e.currentTarget.style.background = 'var(--bg)'}
                     onMouseOut={e => e.currentTarget.style.background = 'white'}>
                     <strong>{c.full_name}</strong> <span style={{ color: 'var(--text-muted)' }}>@{c.nickname} · {c.email}</span>
                   </div>
@@ -439,28 +439,28 @@ export default function TrainerPanel() {
           {selectedCreditClient && (
             <>
               {/* Client credits info */}
-              <div style={{ ...s.card, background: clientCredits ? '#F0FDF4' : '#FEF2F2', border: `1px solid ${clientCredits ? '#86EFAC' : '#FECACA'}` }}>
+              <div className={`scoreboard-panel ${!clientCredits ? 'urgent' : ''}`} style={{ marginBottom: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
-                    <div style={{ fontWeight: '700', fontSize: '16px' }}>{selectedCreditClient.full_name}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>@{selectedCreditClient.nickname} · {selectedCreditClient.email}</div>
+                    <div style={{ fontWeight: '700', fontSize: '16px', color: 'white' }}>{selectedCreditClient.full_name}</div>
+                    <div style={{ fontSize: '13px', color: '#ACA9A2' }}>@{selectedCreditClient.nickname} · {selectedCreditClient.email}</div>
                   </div>
                   <div style={{ textAlign: 'right' }}>
                     {clientCredits ? (
                       <>
-                        <div style={{ fontSize: '28px', fontWeight: '700', color: '#1B4332', fontFamily: 'DM Mono' }}>{clientCredits.amount === 999 ? '∞' : clientCredits.amount}</div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>platné do {new Date(clientCredits.expires_at).toLocaleDateString('sk-SK')}</div>
+                        <div className="num">{clientCredits.amount === 999 ? '∞' : clientCredits.amount}</div>
+                        <div className="exp">platné do {new Date(clientCredits.expires_at).toLocaleDateString('sk-SK')}</div>
                       </>
                     ) : (
-                      <span style={s.tag('#FEE2E2', '#B91C1C')}>Žiadne aktívne kredity</span>
+                      <span className="badge badge-red">Žiadne aktívne kredity</span>
                     )}
                   </div>
                 </div>
                 {clientCredits && (
-                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(0,0,0,0.08)', display: 'flex', gap: '8px' }}>
+                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.12)', display: 'flex', gap: '8px' }}>
                     <button onClick={() => adjustCredits(-1)} style={s.btnRed}>− 1 kredit</button>
-                    <button onClick={() => adjustCredits(+1)} style={s.btn()}>+ 1 kredit</button>
-                    <button onClick={() => adjustCredits(+5)} style={s.btn()}>+ 5 kreditov</button>
+                    <button onClick={() => adjustCredits(+1)} style={s.btn('white', 'rgba(255,255,255,0.12)')}>+ 1 kredit</button>
+                    <button onClick={() => adjustCredits(+5)} style={s.btn('white', 'rgba(255,255,255,0.12)')}>+ 5 kreditov</button>
                   </div>
                 )}
               </div>
@@ -471,15 +471,15 @@ export default function TrainerPanel() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
                   {MEMBERSHIP_TYPES.map(mt => (
                     <button key={mt.id} onClick={() => setSelectedMembership(mt)} style={{
-                      padding: '12px', borderRadius: '10px', border: `1.5px solid ${selectedMembership.id === mt.id ? '#D97706' : 'var(--border)'}`,
-                      background: selectedMembership.id === mt.id ? '#FEF3C7' : 'white', cursor: 'pointer', textAlign: 'left'
+                      padding: '12px', borderRadius: '10px', border: `1.5px solid ${selectedMembership.id === mt.id ? 'var(--green)' : 'var(--border)'}`,
+                      background: selectedMembership.id === mt.id ? 'var(--green-bg)' : 'white', cursor: 'pointer', textAlign: 'left'
                     }}>
-                      <div style={{ fontWeight: '600', fontSize: '13px', color: selectedMembership.id === mt.id ? '#92400E' : 'var(--text)' }}>{mt.label}</div>
+                      <div style={{ fontWeight: '600', fontSize: '13px', color: selectedMembership.id === mt.id ? 'var(--green-dark)' : 'var(--text)' }}>{mt.label}</div>
                       <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{mt.price} €</div>
                     </button>
                   ))}
                 </div>
-                <button onClick={addMembership} style={{ ...s.btn('#1B4332', '#D8F3DC'), width: '100%', padding: '10px' }}>
+                <button onClick={addMembership} className="btn btn-green" style={{ width: '100%', padding: '10px' }}>
                   Pridať členstvo — {selectedMembership.label} ({selectedMembership.price} €)
                 </button>
               </div>
@@ -490,4 +490,3 @@ export default function TrainerPanel() {
     </div>
   )
 }
-
