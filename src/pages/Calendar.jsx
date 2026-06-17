@@ -204,7 +204,11 @@ export default function Calendar() {
             )
           })}
           {Object.keys(byDay).length > visibleDays && (
-            <button onClick={() => setVisibleDays(v => v + 2)} className="btn" style={{ display: 'block', margin: '10px auto 0', padding: '10px 24px', fontSize: '13px' }}>
+            <button onClick={() => setVisibleDays(v => v + 2)} style={{
+              display: 'block', width: '100%', margin: '20px auto 0', padding: '16px',
+              fontSize: '15px', fontWeight: '600', borderRadius: '12px',
+              border: '2px solid var(--green)', background: 'white', color: 'var(--green-dark)', cursor: 'pointer'
+            }}>
               Načítať ďalšie dni
             </button>
           )}
