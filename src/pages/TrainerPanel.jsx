@@ -393,7 +393,7 @@ export default function TrainerPanel() {
                               <div key={c.id} onClick={() => addClientManually(c)} style={{ padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border)', fontSize: '13px', display: 'flex', justifyContent: 'space-between', background: 'white' }}
                                 onMouseOver={e => e.currentTarget.style.background = '#F9FAFB'}
                                 onMouseOut={e => e.currentTarget.style.background = 'white'}>
-                <                <span><strong>{c.full_name}</strong> <span style={{ color: 'var(--text-muted)' }}>@{c.nickname}</span></span>
+                <span><strong>{c.full_name}</strong> <span style={{ color: 'var(--text-muted)' }}>@{c.nickname}</span></span>
                                 <span style={{ color: '#2D6A4F', fontWeight: '600' }}>+ Pridať</span>
                               </div>
                             ))}
