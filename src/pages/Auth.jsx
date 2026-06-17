@@ -43,7 +43,7 @@ export default function Auth() {
       <div style={{ width: '100%', maxWidth: '380px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <img src="/logo.png" alt="BaseGym" style={{ width: '76px', height: '76px', margin: '0 auto 14px', display: 'block' }} />
-          <h1 className="display" style={{ fontSize: '28px', color: 'var(--green-dark)' }}>BASEGYM BB</h1>
+          <h1 className="display" style={{ fontSize: '28px', color: 'var(--green-dark)' }}>BaseGym BB</h1>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Rezervačný systém</p>
         </div>
         <div style={{ background: 'white', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px' }}>
