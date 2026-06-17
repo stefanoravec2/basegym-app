@@ -13,7 +13,7 @@ function AppInner() {
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
       <div style={{ textAlign: 'center' }}>
-        <img src="/logo.png" alt="BaseGym" style={{ width: '60px', height: '60px', borderRadius: '50%', margin: '0 auto 12px', display: 'block' }} />
+        <img src="/logo.png" alt="BaseGym" style={{ width: '60px', height: '60px', margin: '0 auto 12px', display: 'block' }} />
         <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Načítavam...</p>
       </div>
     </div>
@@ -22,25 +22,25 @@ function AppInner() {
   if (!user) return <Auth />
 
   const tabs = [
-    { id: 'calendar', label: 'Rezervácie', color: '#2D6A4F', bg: '#D8F3DC', border: '#2D6A4F' },
-    { id: 'profile', label: 'Môj profil', color: '#1E3A8A', bg: '#DBEAFE', border: '#1D4ED8' },
+    { id: 'calendar', label: 'Rezervácie' },
+    { id: 'profile', label: 'Môj profil' },
   ]
-  if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner', color: '#92400E', bg: '#FEF3C7', border: '#D97706' })
+  if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner' })
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <div style={{ background: 'white', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '54px', gap: '8px' }}>
-          <img src="/logo.png" alt="BaseGym BB" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-          <span style={{ fontWeight: '600', fontSize: '14px', flex: 1 }}>BaseGym BB</span>
+        <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '56px', gap: '10px' }}>
+          <img src="/logo.png" alt="BaseGym BB" style={{ width: '32px', height: '32px', objectFit: 'contain', flexShrink: 0 }} />
+          <span className="display" style={{ fontSize: '18px', color: 'var(--green-dark)', flex: 1 }}>BASEGYM BB</span>
           {profile?.full_name && <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginRight: '4px' }}>👋 {profile.full_name.split(' ')[0]}</span>}
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             {tabs.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)} style={{
                 padding: '6px 14px', borderRadius: '999px',
-                border: `1.5px solid ${tab === t.id ? t.border : 'transparent'}`,
-                background: tab === t.id ? t.bg : 'none',
-                color: tab === t.id ? t.color : 'var(--text-muted)',
+                border: `1.5px solid ${tab === t.id ? 'var(--green)' : 'transparent'}`,
+                background: tab === t.id ? 'var(--green-bg)' : 'none',
+                color: tab === t.id ? 'var(--green-dark)' : 'var(--text-muted)',
                 fontWeight: tab === t.id ? '600' : '400', fontSize: '13px', cursor: 'pointer'
               }}>{t.label}</button>
             ))}
