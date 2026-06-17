@@ -6,6 +6,19 @@ import Profile from './pages/Profile'
 import TrainerPanel from './pages/TrainerPanel'
 import './index.css'
 
+const FEMALE_EMOJIS = ['🦄', '💄', '🐹', '🐒', '❤️', '🌺']
+const MALE_EMOJIS = ['🕵️‍♂️', '🏋🏻‍♂️', '🕺', '🥇', '🧸']
+
+// Jednoduchý odhad podľa krstného mena (slovenské ženské mená takmer vždy
+// končia na "a"). Nie je to 100% presné, ale na zábavné emoji v hlavičke stačí.
+function pickAvatarEmoji(uid, fullName) {
+  const first = (fullName || '').trim().split(' ')[0].toLowerCase()
+  const list = first.endsWith('a') ? FEMALE_EMOJIS : MALE_EMOJIS
+  let hash = 0
+  for (let i = 0; i < (uid || '').length; i++) hash = (hash * 31 + uid.charCodeAt(i)) >>> 0
+  return list[hash % list.length]
+}
+
 function AppInner() {
   const { user, profile, loading, isTrainer } = useAuth()
   const [tab, setTab] = useState('calendar')
@@ -32,8 +45,8 @@ function AppInner() {
       <div style={{ background: 'white', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '56px', gap: '10px' }}>
           <img src="/logo.png" alt="BaseGym BB" style={{ width: '32px', height: '32px', objectFit: 'contain', flexShrink: 0 }} />
-          <span className="display" style={{ fontSize: '18px', color: 'var(--green-dark)', flex: 1 }}>BASEGYM BB</span>
-          {profile?.full_name && <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginRight: '4px' }}>👋 {profile.full_name.split(' ')[0]}</span>}
+          <span className="display" style={{ fontSize: '18px', color: 'var(--green-dark)', flex: 1 }}>BaseGym BB</span>
+          {profile && <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)', marginRight: '4px' }}>{pickAvatarEmoji(user?.uid, profile.full_name)} {profile.nickname || profile.full_name?.split(' ')[0]}</span>}
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             {tabs.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)} style={{
