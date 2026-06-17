@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { trainerInfo } from '../lib/trainers'
 
 const DAYS_SK = ['nedeľa','pondelok','utorok','streda','štvrtok','piatok','sobota']
 
@@ -13,11 +12,13 @@ export default function Calendar() {
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState({ text: '', type: 'green' })
   const [expanded, setExpanded] = useState(null)
+  const [visibleDays, setVisibleDays] = useState(2)
 
   useEffect(() => { if (user) loadData() }, [user])
 
   async function loadData() {
     setLoading(true)
+    setVisibleDays(2)
     const now = new Date()
     now.setHours(0, 0, 0, 0)
     const maxDate = new Date()
@@ -119,7 +120,12 @@ export default function Calendar() {
           </div>
         ) : <span className="badge badge-red">Žiadne aktívne kredity</span>}
       </div>
-      {actionMsg.text && <div className={`info-box ${actionMsg.type === 'red' ? 'info-red' : 'info-green'}`} style={{ marginBottom: '16px', fontWeight: '500' }}>{actionMsg.text}</div>}
+      {actionMsg.text && (
+        <div className={`info-box ${actionMsg.type === 'red' ? 'info-red' : 'info-green'}`} style={{
+          position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+          zIndex: 1000, fontWeight: '500', maxWidth: '90%', boxShadow: '0 6px 20px rgba(0,0,0,0.18)'
+        }}>{actionMsg.text}</div>
+      )}
       {loading ? <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>Načítavam tréningy...</p>
       : Object.keys(byDay).length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
@@ -127,7 +133,7 @@ export default function Calendar() {
         </div>
       ) : (
         <div>
-          {Object.entries(byDay).map(([dateStr, dayTrainings]) => {
+          {Object.entries(byDay).slice(0, visibleDays).map(([dateStr, dayTrainings]) => {
             const day = new Date(dateStr)
             const isToday = day.toDateString() === new Date().toDateString()
             const isTomorrow = day.toDateString() === new Date(Date.now() + 86400000).toDateString()
@@ -145,9 +151,8 @@ export default function Calendar() {
                     const full = activeCount >= t.capacity
                     const past = new Date(t.starts_at) < new Date()
                     const isExp = expanded === t.id
-                    const trainer = trainerInfo(t.trainer_firebase_uid)
                     return (
-                      <div key={t.id} style={{ borderRadius: '14px', background: reserved ? 'var(--green-bg)' : past ? '#F2F2EF' : 'white', border: `1.5px solid ${reserved ? 'var(--green)' : 'var(--border-md)'}`, overflow: 'hidden', opacity: past ? 0.7 : 1 }}>
+                      <div key={t.id} style={{ borderRadius: '14px', background: reserved ? 'var(--green-bg)' : 'white', border: `1.5px solid ${reserved ? 'var(--green)' : 'var(--border-md)'}`, overflow: 'hidden' }}>
                         <div style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1 }}>
@@ -165,16 +170,15 @@ export default function Calendar() {
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border)', flexWrap: 'wrap', gap: '10px' }}>
                             <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                              {trainer && <span className="trainer-chip"><span className="emoji">{trainer.emoji}</span>{trainer.name}</span>}
                               <span className="badge badge-amber">{t.credits_cost || 1} kredit</span>
                               <button onClick={() => setExpanded(isExp ? null : t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--text-muted)', textDecoration: 'underline' }}>
                                 prihlásení {isExp ? '▲' : '▼'}
                               </button>
                             </div>
-                            {!past && (
-                              reserved ? (
-                                <button onClick={() => cancel(t)} className="btn btn-red" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Odhlásiť</button>
-                              ) : full ? (
+                            {reserved ? (
+                              <button onClick={() => cancel(t)} className="btn btn-red" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Odhlásiť</button>
+                            ) : !past && (
+                              full ? (
                                 <button disabled style={{ background: '#F2F2EF', border: '1px solid var(--border-md)', color: 'var(--text-hint)', padding: '8px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'default' }}>Plné</button>
                               ) : (
                                 <button onClick={() => reserve(t)} className="btn btn-green" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Prihlásiť sa</button>
@@ -199,6 +203,11 @@ export default function Calendar() {
               </div>
             )
           })}
+          {Object.keys(byDay).length > visibleDays && (
+            <button onClick={() => setVisibleDays(v => v + 2)} className="btn" style={{ display: 'block', margin: '10px auto 0', padding: '10px 24px', fontSize: '13px' }}>
+              Načítať ďalšie dni
+            </button>
+          )}
         </div>
       )}
     </div>
