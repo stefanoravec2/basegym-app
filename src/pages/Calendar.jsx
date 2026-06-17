@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { trainerInfo } from '../lib/trainers'
 
 const DAYS_SK = ['nedeľa','pondelok','utorok','streda','štvrtok','piatok','sobota']
 
@@ -74,7 +75,7 @@ export default function Calendar() {
         reason: `Rezervácia: ${training.title} (${new Date(training.starts_at).toLocaleDateString('sk-SK')})`,
         training_id: training.id
       })
-      showMsg('Rezervácia úsp ešná! 🎉'); loadData()
+      showMsg('Rezervácia úspešná! 🎉'); loadData()
     } else {
       if (error.code === '23505') showMsg('Na tento tréning si už prihlásený/á.', 'red')
       else showMsg('Chyba. Skús znova.', 'red')
@@ -102,29 +103,26 @@ export default function Calendar() {
   }, {})
 
   const daysUntilExpiry = credits ? Math.ceil((new Date(credits.expires_at) - new Date()) / 86400000) : null
+  const expiryUrgent = credits && daysUntilExpiry <= 5
 
   return (
     <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <div style={{ background: 'white', border: '1px solid var(--border)', borderRadius: '14px', padding: '14px 20px', marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+      <div className={`scoreboard-panel ${expiryUrgent ? 'urgent' : ''}`} style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
         <div>
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px' }}>Zostatok kreditov</div>
-          <div style={{ fontSize: '26px', fontWeight: '700', fontFamily: 'DM Mono', color: credits && credits.amount > 0 ? '#1B4332' : 'var(--red)' }}>
-            {credits ? credits.amount : 0}<span style={{ fontSize: '13px', fontWeight: '400', color: 'var(--text-muted)', marginLeft: '6px' }}>kreditov</span>
-          </div>
+          <div className="label">Zostáva</div>
+          <div className={`num ${expiryUrgent ? 'urgent' : ''}`}>{credits ? credits.amount : 0}<span style={{ fontSize: '13px', fontWeight: '400', color: '#9C9A92', marginLeft: '6px' }}>kreditov</span></div>
         </div>
         {credits ? (
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '2px' }}>Platné do</div>
-            <div style={{ fontSize: '14px', fontWeight: '600', color: daysUntilExpiry <= 7 ? 'var(--red)' : 'var(--text)' }}>{new Date(credits.expires_at).toLocaleDateString('sk-SK')}</div>
-            {daysUntilExpiry <= 7 && <div style={{ fontSize: '11px', color: 'var(--red)', marginTop: '2px' }}>⚠️ Expiruje o {daysUntilExpiry} {daysUntilExpiry === 1 ? 'deň' : 'dní'}</div>}
+            <div className={`exp ${expiryUrgent ? 'urgent' : ''}`}>platné do {new Date(credits.expires_at).toLocaleDateString('sk-SK')}</div>
+            {expiryUrgent && <div style={{ fontSize: '11px', color: 'var(--score-text-urgent)', marginTop: '2px' }}>posledných {daysUntilExpiry} {daysUntilExpiry === 1 ? 'deň' : 'dní'}</div>}
           </div>
-        ) : <span style={{ background: 'var(--red-bg)', color: 'var(--red)', fontSize: '12px', padding: '4px 12px', borderRadius: '20px', fontWeight: '500' }}>Žiadne aktívne kredity</span>}
+        ) : <span className="badge badge-red">Žiadne aktívne kredity</span>}
       </div>
-      {actionMsg.text && <div style={{ padding: '12px 16px', borderRadius: '10px', marginBottom: '16px', fontSize: '13px', fontWeight: '500', background: actionMsg.type === 'red' ? 'var(--red-bg)' : '#D8F3DC', color: actionMsg.type === 'red' ? 'var(--red)' : '#1B4332' }}>{actionMsg.text}</div>}
+      {actionMsg.text && <div className={`info-box ${actionMsg.type === 'red' ? 'info-red' : 'info-green'}`} style={{ marginBottom: '16px', fontWeight: '500' }}>{actionMsg.text}</div>}
       {loading ? <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px 0' }}>Načítavam tréningy...</p>
       : Object.keys(byDay).length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: '32px', marginBottom: '12px' }}>📅</div>
           <p style={{ fontSize: '15px', fontWeight: '500' }}>Žiadne tréningy v najbližších 14 dňoch</p>
         </div>
       ) : (
@@ -136,8 +134,8 @@ export default function Calendar() {
             return (
               <div key={dateStr} style={{ marginBottom: '28px' }}>
                 <div style={{ textAlign: 'center', marginBottom: '14px' }}>
-                  <div style={{ fontSize: '28px', fontWeight: '700', color: 'var(--text)', lineHeight: 1.1 }}>{day.getDate()}. {day.getMonth() + 1}. {day.getFullYear()}</div>
-                  <div style={{ fontSize: '14px', color: 'var(--text-muted)', marginTop: '2px' }}>{isToday ? '🟢 Dnes' : isTomorrow ? 'Zajtra' : DAYS_SK[day.getDay()]}</div>
+                  <div className="display" style={{ fontSize: '30px', color: 'var(--text)', lineHeight: 1.1 }}>{day.getDate()}. {day.getMonth() + 1}. {day.getFullYear()}</div>
+                  <div style={{ fontSize: '14px', color: isToday ? 'var(--green)' : 'var(--text-muted)', marginTop: '2px', fontWeight: isToday ? '600' : '400' }}>{isToday ? 'Dnes' : isTomorrow ? 'Zajtra' : DAYS_SK[day.getDay()]}</div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {dayTrainings.map(t => {
@@ -147,39 +145,41 @@ export default function Calendar() {
                     const full = activeCount >= t.capacity
                     const past = new Date(t.starts_at) < new Date()
                     const isExp = expanded === t.id
+                    const trainer = trainerInfo(t.trainer_firebase_uid)
                     return (
-                      <div key={t.id} style={{ borderRadius: '14px', background: reserved ? '#D8F3DC' : past ? '#F5F5F3' : 'white', border: `1.5px solid ${reserved ? '#2D6A4F' : '#E5E5E5'}`, overflow: 'hidden', opacity: past ? 0.7 : 1 }}>
+                      <div key={t.id} style={{ borderRadius: '14px', background: reserved ? 'var(--green-bg)' : past ? '#F2F2EF' : 'white', border: `1.5px solid ${reserved ? 'var(--green)' : 'var(--border-md)'}`, overflow: 'hidden', opacity: past ? 0.7 : 1 }}>
                         <div style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
-                            <div style={{ minWidth: '90px' }}>
-                              <span style={{ fontSize: '22px', fontWeight: '700' }}>{formatTime(t.starts_at)}</span>
-                              {t.ends_at && <span style={{ fontSize: '15px', color: 'var(--text-muted)', marginLeft: '4px' }}>- {formatTime(t.ends_at)}</span>}
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1 }}>
+                              <div style={{ minWidth: '90px' }}>
+                                <span style={{ fontSize: '22px', fontWeight: '700' }}>{formatTime(t.starts_at)}</span>
+                                {t.ends_at && <span style={{ fontSize: '15px', color: 'var(--text-muted)', marginLeft: '4px' }}>- {formatTime(t.ends_at)}</span>}
+                              </div>
+                              <div>
+                                <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>{t.title}</div>
+                                {t.description && <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>{t.description}</div>}
+                                {reserved && <span className="badge" style={{ background: 'var(--green)', color: 'white', marginTop: '4px' }}>✓ Prihlásený/á</span>}
+                              </div>
                             </div>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>{t.title}</div>
-                              {t.description && <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>{t.description}</div>}
-                              {reserved && <span style={{ fontSize: '12px', background: '#2D6A4F', color: 'white', padding: '2px 10px', borderRadius: '20px', fontWeight: '500', display: 'inline-block', marginTop: '4px' }}>✓ Prihlásený/á</span>}
+                            <span className={`scoreboard ${full ? 'urgent' : ''}`}>{activeCount}/{t.capacity}</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border)', flexWrap: 'wrap', gap: '10px' }}>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                              {trainer && <span className="trainer-chip"><span className="emoji">{trainer.emoji}</span>{trainer.name}</span>}
+                              <span className="badge badge-amber">{t.credits_cost || 1} kredit</span>
+                              <button onClick={() => setExpanded(isExp ? null : t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--text-muted)', textDecoration: 'underline' }}>
+                                prihlásení {isExp ? '▲' : '▼'}
+                              </button>
                             </div>
                             {!past && (
-                              <div style={{ flexShrink: 0 }}>
-                                {reserved ? (
-                                  <button onClick={() => cancel(t)} style={{ background: 'white', border: '1.5px solid #B91C1C', color: '#B91C1C', padding: '8px 18px', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>Odhlásiť</button>
-                                ) : full ? (
-                                  <button disabled style={{ background: '#F5F5F3', border: '1px solid #E5E5E5', color: '#A0A0A0', padding: '8px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'default' }}>Plné</button>
-                                ) : (
-                                  <button onClick={() => reserve(t)} style={{ background: '#2D6A4F', border: 'none', color: 'white', padding: '8px 18px', borderRadius: '10px', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>Prihlásiť sa</button>
-                                )}
-                              </div>
+                              reserved ? (
+                                <button onClick={() => cancel(t)} className="btn btn-red" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Odhlásiť</button>
+                              ) : full ? (
+                                <button disabled style={{ background: '#F2F2EF', border: '1px solid var(--border-md)', color: 'var(--text-hint)', padding: '8px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'default' }}>Plné</button>
+                              ) : (
+                                <button onClick={() => reserve(t)} className="btn btn-green" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Prihlásiť sa</button>
+                              )
                             )}
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{t.credits_cost || 1} kredit</span>
-                              <span style={{ fontSize: '12px', color: full ? '#B91C1C' : 'var(--text-muted)', fontWeight: full ? '600' : '400' }}>{full ? '🔴 Obsadené' : `zostáva ${t.capacity - activeCount} miest`}</span>
-                            </div>
-                            <button onClick={() => setExpanded(isExp ? null : t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--text-muted)' }}>
-                              {activeCount}/{t.capacity} prihlásených {isExp ? '▲' : '▼'}
-                            </button>
                           </div>
                           {isExp && (
                             <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -187,7 +187,7 @@ export default function Calendar() {
                               : activeRes.map((r, i) => {
                                 const nick = r.client_profiles?.nickname || r.client_profiles?.full_name?.split(' ')[0] || `Člen ${i+1}`
                                 const isMe = r.client_firebase_uid === user.uid
-                                return <span key={r.id} style={{ fontSize: '12px', background: isMe ? '#2D6A4F' : 'rgba(0,0,0,0.06)', color: isMe ? 'white' : 'var(--text)', borderRadius: '20px', padding: '3px 10px' }}>@{nick}</span>
+                                return <span key={r.id} style={{ fontSize: '12px', background: isMe ? 'var(--green)' : 'rgba(0,0,0,0.06)', color: isMe ? 'white' : 'var(--text)', borderRadius: '20px', padding: '3px 10px' }}>@{nick}</span>
                               })}
                             </div>
                           )}
