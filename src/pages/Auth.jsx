@@ -42,8 +42,8 @@ export default function Auth() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div style={{ width: '100%', maxWidth: '380px' }}>
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <img src="/logo.png" alt="BaseGym" style={{ width: '72px', height: '72px', borderRadius: '50%', margin: '0 auto 12px', display: 'block' }} />
-          <h1 style={{ fontSize: '20px', fontWeight: '700', color: 'var(--text)' }}>BaseGym BB</h1>
+          <img src="/logo.png" alt="BaseGym" style={{ width: '76px', height: '76px', margin: '0 auto 14px', display: 'block' }} />
+          <h1 className="display" style={{ fontSize: '28px', color: 'var(--green-dark)' }}>BASEGYM BB</h1>
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Rezervačný systém</p>
         </div>
         <div style={{ background: 'white', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px' }}>
@@ -52,7 +52,7 @@ export default function Auth() {
               <button key={m} onClick={() => { setMode(m); setError('') }} style={{
                 flex: 1, padding: '7px', borderRadius: '8px', border: 'none', cursor: 'pointer',
                 background: mode === m ? 'white' : 'transparent',
-                color: mode === m ? 'var(--text)' : 'var(--text-muted)',
+                color: mode === m ? 'var(--green-dark)' : 'var(--text-muted)',
                 fontWeight: mode === m ? '600' : '400', fontSize: '13px',
                 boxShadow: mode === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
               }}>{m === 'login' ? 'Prihlásenie' : 'Registrácia'}</button>
@@ -68,8 +68,8 @@ export default function Auth() {
             )}
             <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Email *</label><input className="input" type="email" placeholder="jan@email.sk" value={email} onChange={e => setEmail(e.target.value)} required /></div>
             <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Heslo *</label><input className="input" type="password" placeholder="min. 6 znakov" value={password} onChange={e => setPassword(e.target.value)} required /></div>
-            {error && <div style={{ background: 'var(--red-bg)', color: 'var(--red)', padding: '10px 14px', borderRadius: '8px', fontSize: '13px' }}>{error}</div>}
-            <button type="submit" disabled={loading} style={{ background: '#2D6A4F', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: '600', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '4px' }}>
+            {error && <div className="info-box info-red">{error}</div>}
+            <button type="submit" disabled={loading} style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: '600', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '4px' }}>
               {loading ? 'Moment...' : mode === 'login' ? 'Prihlásiť sa' : 'Vytvoriť účet'}
             </button>
           </form>
