@@ -210,7 +210,6 @@ export default function TrainerPanel() {
       membership_type: selectedMembership.id,
       price_paid: selectedMembership.price,
       is_active: true,
-      starts_at: localDate(today),
       expires_at: localDate(expires),
       trainer_firebase_uid: user.uid,
     })
@@ -490,3 +489,4 @@ export default function TrainerPanel() {
     </div>
   )
 }
+
