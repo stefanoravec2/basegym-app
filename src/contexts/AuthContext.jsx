@@ -62,10 +62,22 @@ export function AuthProvider({ children }) {
   async function signUp(email, password, fullName, nickname, phone) {
     const uc = await createUserWithEmailAndPassword(auth, email, password)
     await updateProfile(uc.user, { displayName: fullName })
-    await supabase.from('client_profiles').upsert({
-      firebase_uid: uc.user.uid, full_name: fullName, email,
-      nickname: nickname || fullName.split(' ')[0].toLowerCase(), phone: phone || null
-    })
+    const { data: existing } = await supabase
+      .from('client_profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+    if (existing) {
+      await supabase.from('client_profiles').update({
+        firebase_uid: uc.user.uid, full_name: fullName,
+        nickname: nickname || fullName.split(' ')[0].toLowerCase(), phone: phone || null
+      }).eq('id', existing.id)
+    } else {
+      await supabase.from('client_profiles').insert({
+        firebase_uid: uc.user.uid, full_name: fullName, email,
+        nickname: nickname || fullName.split(' ')[0].toLowerCase(), phone: phone || null
+      })
+    }
     return uc
   }
 
@@ -80,3 +92,4 @@ export function AuthProvider({ children }) {
 }
 
 export const useAuth = () => useContext(AuthContext)
+
