@@ -39,7 +39,17 @@ export default function TrainerPanel() {
   const [creditSearchResults, setCreditSearchResults] = useState([])
   const [selectedCreditClient, setSelectedCreditClient] = useState(null)
   const [selectedMembership, setSelectedMembership] = useState(MEMBERSHIP_TYPES[1])
+
+  useEffect(() => {
+    const start = new Date(membershipStart)
+    const end = new Date(start)
+    end.setDate(end.getDate() + selectedMembership.days)
+    setMembershipEnd(localDate(end))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMembership, membershipStart])
   const [clientCredits, setClientCredits] = useState(null)
+  const [membershipStart, setMembershipStart] = useState(localDate(new Date()))
+  const [membershipEnd, setMembershipEnd] = useState('')
 
   // Messages
   const [msg, setMsg] = useState({ text: '', type: 'green' })
@@ -91,7 +101,7 @@ export default function TrainerPanel() {
   async function removeReservation(res) {
     await supabase.from('reservations').update({ status: 'cancelled', cancelled_at: new Date().toISOString() }).eq('id', res.id)
     const client = res.client_profiles
-    const { data: cr } = await supabase.from('credits').select('*').eq('client_firebase_uid', res.client_firebase_uid).eq('is_active', true).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
+    const { data: cr } = await supabase.from('credits').select('*').eq('client_firebase_uid', res.client_firebase_uid).eq('is_active', true).lte('starts_at', localDate(new Date())).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
     if (cr) {
       const refund = res.credits_deducted || 1
       await supabase.from('credits').update({ amount: cr.amount + refund }).eq('id', cr.id)
@@ -109,7 +119,7 @@ export default function TrainerPanel() {
   }
 
   async function addClientManually(client) {
-    const { data: cr } = await supabase.from('credits').select('*').eq('client_firebase_uid', client.firebase_uid).eq('is_active', true).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
+    const { data: cr } = await supabase.from('credits').select('*').eq('client_firebase_uid', client.firebase_uid).eq('is_active', true).lte('starts_at', localDate(new Date())).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
     const cost = selectedTraining.credits_cost || 1
     const { error } = await supabase.from('reservations').insert({
       training_id: selectedTraining.id,
@@ -142,17 +152,21 @@ export default function TrainerPanel() {
     setSelectedCreditClient(client)
     setCreditSearch(client.full_name)
     setCreditSearchResults([])
-    const { data } = await supabase.from('credits').select('*').eq('client_firebase_uid', client.firebase_uid).eq('is_active', true).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
+    const { data } = await supabase.from('credits').select('*').eq('client_firebase_uid', client.firebase_uid).eq('is_active', true).lte('starts_at', localDate(new Date())).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
     setClientCredits(data || null)
   }
 
   async function addMembership() {
     if (!selectedCreditClient) { showMsg('Vyber klienta', 'red'); return }
-    const today = new Date()
-    const expires = new Date(today)
-    expires.setDate(expires.getDate() + selectedMembership.days)
-    // deactivate existing
-    await supabase.from('credits').update({ is_active: false }).eq('client_firebase_uid', selectedCreditClient.firebase_uid).eq('is_active', true)
+    if (!membershipStart || !membershipEnd) { showMsg('Zadaj platnosť od-do', 'red'); return }
+    if (membershipEnd < membershipStart) { showMsg('Dátum "do" musí byť po dátume "od"', 'red'); return }
+    const startsNow = membershipStart <= localDate(new Date())
+    // ak nové kredity platia už teraz, staré aktívne (ktoré by sa prekrývali) deaktivujeme;
+    // ak platia až od budúcna, necháme starú permanentku bežať ďalej (nová sa uplatní, keď stará skončí)
+    if (startsNow) {
+      await supabase.from('credits').update({ is_active: false })
+        .eq('client_firebase_uid', selectedCreditClient.firebase_uid).eq('is_active', true)
+    }
     const { error } = await supabase.from('credits').insert({
       client_firebase_uid: selectedCreditClient.firebase_uid,
       client_id: selectedCreditClient.id,
@@ -160,11 +174,12 @@ export default function TrainerPanel() {
       membership_type: selectedMembership.id,
       price_paid: selectedMembership.price,
       is_active: true,
-      expires_at: localDate(expires),
+      starts_at: membershipStart,
+      expires_at: membershipEnd,
       trainer_firebase_uid: user.uid,
     })
     if (!error) {
-      await supabase.from('credit_logs').insert({ client_firebase_uid: selectedCreditClient.firebase_uid, client_id: selectedCreditClient.id, change_amount: selectedMembership.credits, reason: `Nové členstvo: ${selectedMembership.label}` })
+      await supabase.from('credit_logs').insert({ client_firebase_uid: selectedCreditClient.firebase_uid, client_id: selectedCreditClient.id, change_amount: selectedMembership.credits, reason: `Nové členstvo: ${selectedMembership.label} (${membershipStart} – ${membershipEnd})` })
       showMsg(`Členstvo pridané pre ${selectedCreditClient.full_name} ✅`)
       selectCreditClient(selectedCreditClient)
     } else showMsg('Chyba: ' + error.message, 'red')
@@ -172,7 +187,7 @@ export default function TrainerPanel() {
 
   async function adjustCredits(delta) {
     if (!selectedCreditClient) { showMsg('Vyber klienta', 'red'); return }
-    const { data: cr } = await supabase.from('credits').select('*').eq('client_firebase_uid', selectedCreditClient.firebase_uid).eq('is_active', true).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
+    const { data: cr } = await supabase.from('credits').select('*').eq('client_firebase_uid', selectedCreditClient.firebase_uid).eq('is_active', true).lte('starts_at', localDate(new Date())).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
     if (!cr) { showMsg('Klient nemá aktívne kredity', 'red'); return }
     const newAmount = Math.max(0, cr.amount + delta)
     await supabase.from('credits').update({ amount: newAmount }).eq('id', cr.id)
@@ -380,6 +395,21 @@ export default function TrainerPanel() {
                     </button>
                   ))}
                 </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '14px' }}>
+                  <div>
+                    <label style={s.label}>Platí od</label>
+                    <input type="date" style={s.input} value={membershipStart} onChange={e => setMembershipStart(e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={s.label}>Platí do</label>
+                    <input type="date" style={s.input} value={membershipEnd} onChange={e => setMembershipEnd(e.target.value)} />
+                  </div>
+                </div>
+                {membershipStart > localDate(new Date()) && (
+                  <div className="info-box info-amber" style={{ marginBottom: '14px', fontSize: '12.5px' }}>
+                    Platnosť začína až {new Date(membershipStart).toLocaleDateString('sk-SK')} — ak má klient ešte platné kredity, tie zostanú v platnosti do svojho konca a nové sa uplatnia až potom.
+                  </div>
+                )}
                 <button onClick={addMembership} className="btn btn-green" style={{ width: '100%', padding: '10px' }}>
                   Pridať členstvo — {selectedMembership.label} ({selectedMembership.price} €)
                 </button>

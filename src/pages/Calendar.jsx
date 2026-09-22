@@ -53,6 +53,7 @@ export default function Calendar() {
       .select('*')
       .eq('client_firebase_uid', user.uid)
       .eq('is_active', true)
+      .lte('starts_at', new Date().toISOString().split('T')[0])
       .gte('expires_at', new Date().toISOString().split('T')[0])
       .order('expires_at')
       .limit(1)

@@ -29,7 +29,7 @@ export default function Profile() {
     setLoading(false)
   }
 
-  const activeCredit = credits.find(c => c.is_active && new Date(c.expires_at) >= new Date())
+  const activeCredit = credits.find(c => c.is_active && new Date(c.starts_at) <= new Date() && new Date(c.expires_at) >= new Date())
   const totalTrainings = reservations.filter(r => r.status === 'attended' || r.status === 'active').length
   const daysUntilExpiry = activeCredit ? Math.ceil((new Date(activeCredit.expires_at) - new Date()) / 86400000) : null
   const expiryUrgent = activeCredit && daysUntilExpiry <= 5
