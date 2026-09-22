@@ -9,6 +9,7 @@ export default function Calendar() {
   const [trainings, setTrainings] = useState([])
   const [reservations, setReservations] = useState([])
   const [credits, setCredits] = useState(null)
+  const [trainerNames, setTrainerNames] = useState({})
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState({ text: '', type: 'green' })
   const [expanded, setExpanded] = useState(null)
@@ -32,6 +33,15 @@ export default function Calendar() {
       .eq('is_cancelled', false)
       .order('starts_at')
     setTrainings(tr || [])
+    const trainerIds = [...new Set((tr || []).map(t => t.claimed_by_trainer_id).filter(Boolean))]
+    if (trainerIds.length) {
+      const { data: trs } = await supabase.from('trainer_directory').select('id, full_name').in('id', trainerIds)
+      const map = {}
+      ;(trs || []).forEach(t => { map[t.id] = t.full_name })
+      setTrainerNames(map)
+    } else {
+      setTrainerNames({})
+    }
     const { data: res } = await supabase
       .from('reservations')
       .select('*')
@@ -163,7 +173,10 @@ export default function Calendar() {
                               <div>
                                 <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>{t.title}</div>
                                 {t.description && <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '4px' }}>{t.description}</div>}
-                                {reserved && <span className="badge" style={{ background: 'var(--green)', color: 'white', marginTop: '4px' }}>✓ Prihlásený/á</span>}
+                                {trainerNames[t.claimed_by_trainer_id] && (
+                                  <span className="trainer-chip" style={{ marginBottom: '4px' }}>{trainerNames[t.claimed_by_trainer_id]}</span>
+                                )}
+                                {reserved && <span className="badge" style={{ background: 'var(--green)', color: 'white', marginTop: '4px', marginLeft: trainerNames[t.claimed_by_trainer_id] ? '6px' : '0' }}>✓ Prihlásený/á</span>}
                               </div>
                             </div>
                             <span className={`scoreboard ${full ? 'urgent' : ''}`}>{activeCount}/{t.capacity}</span>

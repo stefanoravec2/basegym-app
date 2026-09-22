@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { trainerInfo } from '../lib/trainers'
 
 const MEMBERSHIP_TYPES = [
   { id: 'single', label: '1 kredit / 7 dní', credits: 1, days: 7, price: 8 },
@@ -26,17 +25,7 @@ export default function TrainerPanel() {
 
   // Trainings
   const [trainings, setTrainings] = useState([])
-  const [newTraining, setNewTraining] = useState({
-    title: 'BaseGym tréning',
-    starts_at_date: localDate(new Date()),
-    starts_at_time: '07:00',
-    ends_at_time: '08:00',
-    capacity: 8,
-    credits_cost: 1,
-    location: 'BaseGym BB',
-    description: '',
-  })
-  const [showNewTraining, setShowNewTraining] = useState(false)
+  const [trainerNames, setTrainerNames] = useState({})
 
   // Reservations for selected training
   const [selectedTraining, setSelectedTraining] = useState(null)
@@ -76,54 +65,15 @@ export default function TrainerPanel() {
       .lte('starts_at', maxDate.toISOString())
       .order('starts_at')
     setTrainings(data || [])
-  }
-
-  async function createTraining() {
-    const startsAt = `${newTraining.starts_at_date}T${newTraining.starts_at_time}:00`
-    const endsAt = `${newTraining.starts_at_date}T${newTraining.ends_at_time}:00`
-    const { error } = await supabase.from('trainings').insert({
-      title: newTraining.title,
-      starts_at: startsAt,
-      ends_at: endsAt,
-      capacity: Number(newTraining.capacity),
-      credits_cost: Number(newTraining.credits_cost),
-      location: newTraining.location,
-      description: newTraining.description,
-      trainer_firebase_uid: user.uid,
-      is_cancelled: false,
-    })
-    if (!error) {
-      showMsg('Tréning vytvorený ✅')
-      setShowNewTraining(false)
-      loadTrainings()
+    const trainerIds = [...new Set((data || []).map(t => t.claimed_by_trainer_id).filter(Boolean))]
+    if (trainerIds.length) {
+      const { data: trs } = await supabase.from('trainer_directory').select('id, full_name').in('id', trainerIds)
+      const map = {}
+      ;(trs || []).forEach(t => { map[t.id] = t.full_name })
+      setTrainerNames(map)
     } else {
-      showMsg('Chyba: ' + error.message, 'red')
+      setTrainerNames({})
     }
-  }
-
-  async function cancelTraining(training) {
-    if (!confirm(`Zrušiť tréning "${training.title}"?`)) return
-    await supabase.from('trainings').update({ is_cancelled: true }).eq('id', training.id)
-    // refund credits
-    const { data: res } = await supabase
-      .from('reservations')
-      .select('*, client_profiles(full_name)')
-      .eq('training_id', training.id)
-      .eq('status', 'active')
-    if (res) {
-      for (const r of res) {
-        await supabase.from('reservations').update({ status: 'cancelled', cancelled_at: new Date().toISOString() }).eq('id', r.id)
-        const { data: cr } = await supabase.from('credits').select('*').eq('client_firebase_uid', r.client_firebase_uid).eq('is_active', true).gte('expires_at', localDate(new Date())).order('expires_at').limit(1).maybeSingle()
-        if (cr) {
-          const refund = r.credits_deducted || 1
-          await supabase.from('credits').update({ amount: cr.amount + refund }).eq('id', cr.id)
-          await supabase.from('credit_logs').insert({ client_firebase_uid: r.client_firebase_uid, change_amount: refund, reason: `Zrušenie tréningu: ${training.title}` })
-        }
-      }
-    }
-    showMsg('Tréning zrušený, kredity vrátené')
-    loadTrainings()
-    if (selectedTraining?.id === training.id) setSelectedTraining(null)
   }
 
   // ── RESERVATIONS ──────────────────────────────────────────
@@ -276,53 +226,7 @@ export default function TrainerPanel() {
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <h2 className="display" style={{ margin: 0, fontSize: '24px' }}>Nadchádzajúce tréningy</h2>
-            <button onClick={() => setShowNewTraining(!showNewTraining)} className={showNewTraining ? 'btn' : 'btn btn-green'} style={{ fontSize: '13px', padding: '8px 16px' }}>
-              {showNewTraining ? '✕ Zavrieť' : '+ Nový tréning'}
-            </button>
           </div>
-
-          {showNewTraining && (
-            <div style={{ ...s.card, border: '1.5px solid var(--green)', marginBottom: '20px' }}>
-              <h3 style={{ margin: '0 0 14px', fontSize: '15px', fontWeight: '600' }}>Nový tréning</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div style={{ gridColumn: '1/-1' }}>
-                  <label style={s.label}>Názov</label>
-                  <input style={s.input} value={newTraining.title} onChange={e => setNewTraining(p => ({ ...p, title: e.target.value }))} />
-                </div>
-                <div>
-                  <label style={s.label}>Dátum</label>
-                  <input type="date" style={s.input} value={newTraining.starts_at_date} onChange={e => setNewTraining(p => ({ ...p, starts_at_date: e.target.value }))} />
-                </div>
-                <div>
-                  <label style={s.label}>Miesto</label>
-                  <input style={s.input} value={newTraining.location} onChange={e => setNewTraining(p => ({ ...p, location: e.target.value }))} />
-                </div>
-                <div>
-                  <label style={s.label}>Začiatok</label>
-                  <input type="time" style={s.input} value={newTraining.starts_at_time} onChange={e => setNewTraining(p => ({ ...p, starts_at_time: e.target.value }))} />
-                </div>
-                <div>
-                  <label style={s.label}>Koniec</label>
-                  <input type="time" style={s.input} value={newTraining.ends_at_time} onChange={e => setNewTraining(p => ({ ...p, ends_at_time: e.target.value }))} />
-                </div>
-                <div>
-                  <label style={s.label}>Kapacita</label>
-                  <input type="number" style={s.input} value={newTraining.capacity} onChange={e => setNewTraining(p => ({ ...p, capacity: e.target.value }))} />
-                </div>
-                <div>
-                  <label style={s.label}>Kredity</label>
-                  <input type="number" style={s.input} value={newTraining.credits_cost} onChange={e => setNewTraining(p => ({ ...p, credits_cost: e.target.value }))} />
-                </div>
-                <div style={{ gridColumn: '1/-1' }}>
-                  <label style={s.label}>Popis (voliteľné)</label>
-                  <input style={s.input} value={newTraining.description} onChange={e => setNewTraining(p => ({ ...p, description: e.target.value }))} placeholder="Napr. zamerane na silu..." />
-                </div>
-              </div>
-              <button onClick={createTraining} className="btn btn-green" style={{ marginTop: '14px', width: '100%', padding: '10px' }}>
-                Vytvoriť tréning
-              </button>
-            </div>
-          )}
 
           {trainings.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', background: 'white', border: '1px solid var(--border)', borderRadius: '14px' }}>
@@ -333,7 +237,6 @@ export default function TrainerPanel() {
               const activeRes = (t.reservations || []).filter(r => r.status === 'active')
               const full = activeRes.length >= t.capacity
               const isSelected = selectedTraining?.id === t.id
-              const trainer = trainerInfo(t.trainer_firebase_uid)
               return (
                 <div key={t.id} style={{ ...s.card, border: isSelected ? '1.5px solid var(--green)' : '1px solid var(--border)' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', flexWrap: 'wrap' }}>
@@ -343,7 +246,7 @@ export default function TrainerPanel() {
                         {formatDT(t.starts_at)} {t.location ? `· ${t.location}` : ''}
                       </div>
                       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
-                        {trainer && <span className="trainer-chip"><span className="emoji">{trainer.emoji}</span>{trainer.name}</span>}
+                        {trainerNames[t.claimed_by_trainer_id] && <span className="trainer-chip">{trainerNames[t.claimed_by_trainer_id]}</span>}
                         <span className="badge badge-amber">{t.credits_cost || 1} kredit</span>
                       </div>
                     </div>
@@ -352,7 +255,6 @@ export default function TrainerPanel() {
                       <button onClick={() => isSelected ? setSelectedTraining(null) : loadTrainingReservations(t)} className="btn" style={{ fontSize: '13px', padding: '8px 16px' }}>
                         {isSelected ? 'Zavrieť' : 'Spravovať'}
                       </button>
-                      <button onClick={() => cancelTraining(t)} style={s.btnRed}>Zrušiť</button>
                     </div>
                   </div>
 
