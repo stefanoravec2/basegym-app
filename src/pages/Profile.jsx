@@ -9,6 +9,8 @@ export default function Profile() {
   const [reservations, setReservations] = useState([])
   const [loading, setLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
+  const [visibleTrainings, setVisibleTrainings] = useState(5)
+  const [visibleLogs, setVisibleLogs] = useState(5)
   const [nickname, setNickname] = useState('')
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
@@ -91,7 +93,7 @@ export default function Profile() {
           <div className="card" style={{ padding: '0 20px', marginBottom: '16px' }}>
             <div style={{ padding: '14px 0 10px', borderBottom: '1px solid var(--border)', fontSize: '14px', fontWeight: '600' }}>História tréningov</div>
             {reservations.length === 0 ? <p style={{ padding: '16px 0', color: 'var(--text-muted)', fontSize: '13px' }}>Žiadne rezervácie</p>
-            : reservations.map(r => (
+            : reservations.slice(0, visibleTrainings).map(r => (
               <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: '500' }}>{r.trainings?.title || 'Tréning'}</div>
@@ -102,11 +104,16 @@ export default function Profile() {
                 </span>
               </div>
             ))}
+            {reservations.length > visibleTrainings && (
+              <button onClick={() => setVisibleTrainings(v => v + 5)} className="btn" style={{ width: '100%', margin: '12px 0', fontSize: '12.5px' }}>
+                Zobraziť ďalšie ({reservations.length - visibleTrainings})
+              </button>
+            )}
           </div>
           <div className="card" style={{ padding: '0 20px' }}>
             <div style={{ padding: '14px 0 10px', borderBottom: '1px solid var(--border)', fontSize: '14px', fontWeight: '600' }}>Pohyby kreditov</div>
             {logs.length === 0 ? <p style={{ padding: '16px 0', color: 'var(--text-muted)', fontSize: '13px' }}>Žiadne záznamy</p>
-            : logs.map(l => (
+            : logs.slice(0, visibleLogs).map(l => (
               <div key={l.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '13px' }}>{l.reason}</div>
@@ -115,6 +122,11 @@ export default function Profile() {
                 <span style={{ fontWeight: '700', fontFamily: 'DM Mono, monospace', fontSize: '15px', color: l.change_amount > 0 ? 'var(--green-dark)' : 'var(--red)' }}>{l.change_amount > 0 ? '+' : ''}{l.change_amount}</span>
               </div>
             ))}
+            {logs.length > visibleLogs && (
+              <button onClick={() => setVisibleLogs(v => v + 5)} className="btn" style={{ width: '100%', margin: '12px 0', fontSize: '12.5px' }}>
+                Zobraziť ďalšie ({logs.length - visibleLogs})
+              </button>
+            )}
           </div>
         </>
       )}
