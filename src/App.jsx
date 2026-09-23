@@ -41,6 +41,11 @@ function AppInner() {
       .then(({ data }) => setMembership(data?.membership_type || null))
   }, [user])
 
+  const female = profile ? isFemale(profile.full_name) : false
+  useEffect(() => {
+    document.documentElement.setAttribute('data-gender', female ? 'f' : 'm')
+  }, [female])
+
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
       <div style={{ textAlign: 'center' }}>
@@ -57,12 +62,6 @@ function AppInner() {
     { id: 'profile', label: 'Môj profil', icon: '👤' },
   ]
   if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner', icon: '🧑‍🏫' })
-
-  const female = profile ? isFemale(profile.full_name) : false
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-gender', female ? 'f' : 'm')
-  }, [female])
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--page-bg)' }}>
