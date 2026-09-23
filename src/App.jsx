@@ -58,34 +58,36 @@ function AppInner() {
   ]
   if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner', icon: '🧑‍🏫' })
 
-  const menuBg = profile ? (isFemale(profile.full_name) ? '#FCE8EF' : 'var(--green-bg)') : 'var(--green-bg)'
-  const menuActiveText = profile ? (isFemale(profile.full_name) ? '#9D174D' : 'var(--green-dark)') : 'var(--green-dark)'
-  const menuActiveBg = profile ? (isFemale(profile.full_name) ? '#F8D0DF' : 'white') : 'white'
+  const female = profile ? isFemale(profile.full_name) : false
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-gender', female ? 'f' : 'm')
+  }, [female])
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--page-bg)' }}>
       <div style={{ background: 'white', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 16px', display: 'flex', alignItems: 'center', height: '52px', gap: '9px' }}>
           <img src="/logo.png" alt="BaseGym BB" style={{ width: '30px', height: '30px', objectFit: 'contain', flexShrink: 0, borderRadius: '7px' }} />
-          <span className="display" style={{ fontSize: '17px', color: 'var(--green-dark)', flex: 1 }}>BaseGym BB</span>
+          <span className="display" style={{ fontSize: '17px', color: 'var(--name-color)', flex: 1 }}>BaseGym BB</span>
           {profile && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>{pickAvatarEmoji(user?.uid, profile.full_name)} {profile.nickname || profile.full_name?.split(' ')[0]}</span>
               {membership && (
-                <span style={{ background: 'var(--green-bg)', color: 'var(--green-dark)', fontSize: '10.5px', fontWeight: '700', padding: '2px 8px', borderRadius: '999px' }}>
+                <span style={{ background: 'var(--badge-bg)', color: 'var(--badge-text)', fontSize: '10.5px', fontWeight: '700', padding: '2px 8px', borderRadius: '999px' }}>
                   {MEMBERSHIP_LABEL[membership] || membership}
                 </span>
               )}
             </span>
           )}
         </div>
-        <div style={{ background: menuBg, borderTop: '1px solid var(--border)' }}>
+        <div style={{ background: 'var(--menu-bg)', borderTop: '1px solid var(--border)', borderBottom: '2px solid var(--menu-accent)' }}>
           <div style={{ maxWidth: '680px', margin: '0 auto', padding: '6px 16px', display: 'flex', gap: '4px' }}>
             {tabs.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)} style={{
                 padding: '6px 13px', borderRadius: '999px', border: 'none', cursor: 'pointer',
-                background: tab === t.id ? menuActiveBg : 'transparent',
-                color: tab === t.id ? menuActiveText : 'var(--text-muted)',
+                background: tab === t.id ? 'var(--menu-active-bg)' : 'transparent',
+                color: tab === t.id ? 'var(--menu-active-text)' : 'var(--text-muted)',
                 fontWeight: tab === t.id ? '700' : '500', fontSize: '12.5px',
                 boxShadow: tab === t.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                 display: 'flex', alignItems: 'center', gap: '5px'

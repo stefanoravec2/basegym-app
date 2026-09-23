@@ -9,8 +9,9 @@
   --text-muted: #6B6B68;
   --text-hint: #A0A09C;
   --green: #388E3C;
-  --green-bg: #E1F4E2;
+  --green-bg: #D8F3DC;
   --green-dark: #1D491F;
+  --green-text: #1D491F;
   --red: #B91C1C;
   --red-bg: #FEE2E2;
   --amber: #B45309;
@@ -18,6 +19,34 @@
   --blue: #1D4ED8;
   --blue-bg: #DBEAFE;
   --score-text: #BFE7C2;
+
+  /* Pohlavie — mužské predvolené, ženy prepíše JS cez data-gender="f" */
+  --grad-from: #2D6A4F;
+  --grad-to: #163B1C;
+  --menu-bg: #D8F3DC;
+  --menu-active-text: #1D491F;
+  --menu-active-bg: white;
+  --menu-accent: transparent;
+  --page-bg: #EFF1ED;
+  --badge-bg: #D8F3DC;
+  --badge-text: #1D491F;
+  --name-color: #1D491F;
+}
+[data-gender="f"] {
+  --grad-from: #43A047;
+  --grad-to: #2E7D32;
+  --menu-bg: #E8F5E9;
+  --menu-active-text: #2E7D32;
+  --menu-active-bg: white;
+  --menu-accent: #F9A8D4;
+  --page-bg: #F6FBF6;
+  --badge-bg: #E8F5E9;
+  --badge-text: #2E7D32;
+  --name-color: #2E7D32;
+  --green-bg: #E8F5E9;
+  --green-dark: #2E7D32;
+  --green-text: #2E7D32;
+}
   --score-text-urgent: #F3B3B0;
   --score-bg-urgent: #2B1715;
   --radius: 12px;
@@ -81,16 +110,15 @@ input, select, textarea, button { font-family: 'DM Sans', sans-serif; font-size:
 /* Welcome / renewal card shown when a client has no active credits */
 .welcome-card {
   position: relative; overflow: hidden;
-  background: linear-gradient(160deg, #2A5F2D 0%, #1D491F 65%, #163915 100%);
+  background: linear-gradient(160deg, var(--grad-from), var(--grad-to));
   color: white; border-radius: 18px; padding: 22px 20px; margin-bottom: 16px;
   box-shadow: 0 10px 24px rgba(29,73,31,0.3);
 }
 .welcome-card::after {
   content: ''; position: absolute; right: -30px; top: -30px; width: 140px; height: 140px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
+  background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%); pointer-events: none;
 }
 .welcome-card.amber { background: linear-gradient(160deg, #C2790F 0%, #9A5F0B 65%, #7A4A08 100%); box-shadow: 0 10px 24px rgba(154,95,11,0.28); }
-.welcome-card.blue { background: linear-gradient(160deg, #2563EB 0%, #1D4ED8 65%, #1E3A8A 100%); box-shadow: 0 10px 24px rgba(29,78,216,0.26); }
 .welcome-card .ring { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
 .welcome-card h3 { font-size: 21px; margin-bottom: 7px; letter-spacing: 0.5px; }
 .welcome-card p { font-size: 12.5px; opacity: 0.88; line-height: 1.55; max-width: 88%; }
@@ -98,9 +126,9 @@ input, select, textarea, button { font-family: 'DM Sans', sans-serif; font-size:
 /* Streak & monthly progress cards */
 .streak-hero {
   position: relative; overflow: hidden; border-radius: 18px; padding: 18px 20px;
-  background: linear-gradient(155deg, #FF7A45 0%, #E8590C 55%, #C2410C 100%);
-  color: white; box-shadow: 0 10px 26px rgba(232,89,12,0.32);
+  background: linear-gradient(155deg, var(--grad-from), var(--grad-to));
+  color: white; box-shadow: 0 10px 26px rgba(29,73,31,0.28);
 }
 .streak-hero::after { content:''; position:absolute; right:-20px; bottom:-30px; width:130px; height:130px; border-radius:50%; background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%); pointer-events: none; }
 
-.month-card { border-radius: 16px; padding: 18px 20px; background: linear-gradient(160deg, #2A5F2D, #1D491F); color: white; box-shadow: 0 8px 20px rgba(29,73,31,0.28); }
+.month-card { border-radius: 16px; padding: 18px 20px; background: linear-gradient(160deg, var(--grad-from), var(--grad-to)); color: white; box-shadow: 0 8px 20px rgba(29,73,31,0.28); }

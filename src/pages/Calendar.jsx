@@ -226,7 +226,7 @@ export default function Calendar() {
         </div>
       )}
       {motivationBanner === 'absence' && (
-        <div className="welcome-card blue" style={{ padding: '16px 18px', marginTop: '-4px', position: 'relative' }}>
+        <div className="welcome-card" style={{ padding: '16px 18px', marginTop: '-4px', position: 'relative' }}>
           <button onClick={() => setMotivationBanner(null)} aria-label="Zavrieť" style={{ position: 'absolute', top: '12px', right: '14px', background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', width: '26px', height: '26px', borderRadius: '50%', cursor: 'pointer', fontSize: '15px', lineHeight: 1 }}>×</button>
           <div className="ring" style={{ width: '40px', height: '40px', fontSize: '19px', marginBottom: '8px' }}>👀</div>
           <h3 className="display" style={{ fontSize: '17px' }}>Chýbaš nám!</h3>
@@ -234,7 +234,7 @@ export default function Calendar() {
         </div>
       )}
       {motivationBanner?.type === 'badge' && (
-        <div className="welcome-card" style={{ padding: '16px 18px', marginTop: '-4px', background: 'linear-gradient(160deg, #F4A81E, #C2790F)', position: 'relative' }}>
+        <div className="welcome-card" style={{ padding: '16px 18px', marginTop: '-4px', position: 'relative' }}>
           <button onClick={() => setMotivationBanner(null)} aria-label="Zavrieť" style={{ position: 'absolute', top: '12px', right: '14px', background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', width: '26px', height: '26px', borderRadius: '50%', cursor: 'pointer', fontSize: '15px', lineHeight: 1 }}>×</button>
           <div className="ring" style={{ width: '40px', height: '40px', fontSize: '19px', marginBottom: '8px' }}>{motivationBanner.icon}</div>
           <h3 className="display" style={{ fontSize: '17px' }}>Nový odznak!</h3>
@@ -242,7 +242,7 @@ export default function Calendar() {
         </div>
       )}
       {motivationBanner?.type === 'record' && (
-        <div className="welcome-card" style={{ padding: '16px 18px', marginTop: '-4px', background: 'linear-gradient(160deg, #FF7A45, #C2410C)', position: 'relative' }}>
+        <div className="welcome-card" style={{ padding: '16px 18px', marginTop: '-4px', position: 'relative' }}>
           <button onClick={() => setMotivationBanner(null)} aria-label="Zavrieť" style={{ position: 'absolute', top: '12px', right: '14px', background: 'rgba(255,255,255,0.18)', border: 'none', color: 'white', width: '26px', height: '26px', borderRadius: '50%', cursor: 'pointer', fontSize: '15px', lineHeight: 1 }}>×</button>
           <div className="ring" style={{ width: '40px', height: '40px', fontSize: '19px', marginBottom: '8px' }}>🏆</div>
           <h3 className="display" style={{ fontSize: '17px' }}>Nový osobný rekord!</h3>
