@@ -90,6 +90,7 @@ input, select, textarea, button { font-family: 'DM Sans', sans-serif; font-size:
   background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
 }
 .welcome-card.amber { background: linear-gradient(160deg, #C2790F 0%, #9A5F0B 65%, #7A4A08 100%); box-shadow: 0 10px 24px rgba(154,95,11,0.28); }
+.welcome-card.blue { background: linear-gradient(160deg, #2563EB 0%, #1D4ED8 65%, #1E3A8A 100%); box-shadow: 0 10px 24px rgba(29,78,216,0.26); }
 .welcome-card .ring { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
 .welcome-card h3 { font-size: 21px; margin-bottom: 7px; letter-spacing: 0.5px; }
 .welcome-card p { font-size: 12.5px; opacity: 0.88; line-height: 1.55; max-width: 88%; }

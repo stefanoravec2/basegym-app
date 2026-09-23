@@ -10,6 +10,7 @@ export default function Calendar() {
   const [reservations, setReservations] = useState([])
   const [credits, setCredits] = useState(null)
   const [lastCredit, setLastCredit] = useState(null)
+  const [motivationBanner, setMotivationBanner] = useState(null)
   const [trainerNames, setTrainerNames] = useState({})
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState({ text: '', type: 'green' })
@@ -17,6 +18,35 @@ export default function Calendar() {
   const [visibleDays, setVisibleDays] = useState(2)
 
   useEffect(() => { if (user) loadData() }, [user])
+
+  useEffect(() => {
+    if (loading || !credits) { return }
+    const now = new Date()
+    const pastVisits = reservations
+      .filter(r => r.trainings?.starts_at && new Date(r.trainings.starts_at) < now)
+      .map(r => new Date(r.trainings.starts_at))
+      .sort((a, b) => b - a)
+    const lastVisit = pastVisits[0] || null
+    const daysSince = lastVisit ? Math.floor((now - lastVisit) / 86400000) : null
+    const recentCount = pastVisits.filter(d => (now - d) <= 7 * 86400000).length
+
+    const todayKey = now.toISOString().split('T')[0]
+    const jan1 = new Date(now.getFullYear(), 0, 1)
+    const weekKey = `${now.getFullYear()}-w${Math.ceil((((now - jan1) / 86400000) + jan1.getDay() + 1) / 7)}`
+
+    if (daysSince !== null && daysSince >= 14) {
+      if (localStorage.getItem('bg_absence_shown') !== todayKey) {
+        localStorage.setItem('bg_absence_shown', todayKey)
+        setMotivationBanner('absence')
+      }
+    } else if (recentCount >= 3) {
+      if (localStorage.getItem('bg_streak_shown') !== weekKey) {
+        localStorage.setItem('bg_streak_shown', weekKey)
+        setMotivationBanner('streak')
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, credits, reservations])
 
   async function loadData() {
     setLoading(true)
@@ -45,7 +75,7 @@ export default function Calendar() {
     }
     const { data: res } = await supabase
       .from('reservations')
-      .select('*')
+      .select('*, trainings(starts_at)')
       .eq('client_firebase_uid', user.uid)
       .eq('status', 'active')
     setReservations(res || [])
@@ -152,6 +182,20 @@ export default function Calendar() {
           <div className="ring">👋</div>
           <h3 className="display">Vitaj v BaseGym!</h3>
           <p>Ešte nemáš aktívne kredity. Príď na recepciu alebo napíš trénerovi, nech ti aktivuje prvú permanentku.</p>
+        </div>
+      )}
+      {motivationBanner === 'streak' && (
+        <div className="welcome-card" style={{ padding: '16px 18px', marginTop: '-4px' }}>
+          <div className="ring" style={{ width: '40px', height: '40px', fontSize: '19px', marginBottom: '8px' }}>💪</div>
+          <h3 className="display" style={{ fontSize: '17px' }}>Skvelý týždeň!</h3>
+          <p>Minulý týždeň si to poriadne odmakal. Poďme na to rovnako aj tento týždeň 💪</p>
+        </div>
+      )}
+      {motivationBanner === 'absence' && (
+        <div className="welcome-card blue" style={{ padding: '16px 18px', marginTop: '-4px' }}>
+          <div className="ring" style={{ width: '40px', height: '40px', fontSize: '19px', marginBottom: '8px' }}>👀</div>
+          <h3 className="display" style={{ fontSize: '17px' }}>Chýbaš nám!</h3>
+          <p>Už je to chvíľka, čo sme ťa v gyme nevideli.</p>
         </div>
       )}
       {actionMsg.text && (
