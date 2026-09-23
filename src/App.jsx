@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Auth from './pages/Auth'
 import Calendar from './pages/Calendar'
 import Profile from './pages/Profile'
 import TrainerPanel from './pages/TrainerPanel'
+import { supabase } from './lib/supabase'
 import './index.css'
+
+const MEMBERSHIP_LABEL = { gold: 'Gold', silver: 'Silver', basic: 'Basic kurz', single: 'Jednorázový' }
 
 const FEMALE_EMOJIS = ['🦄', '💄', '🐹', '🐒', '❤️', '🌺']
 const MALE_EMOJIS = ['🕵️‍♂️', '🏋🏻‍♂️', '🕺', '🥇', '🧸']
@@ -22,6 +25,17 @@ function pickAvatarEmoji(uid, fullName) {
 function AppInner() {
   const { user, profile, loading, isTrainer } = useAuth()
   const [tab, setTab] = useState('calendar')
+  const [membership, setMembership] = useState(null)
+
+  useEffect(() => {
+    if (!user) { setMembership(null); return }
+    const today = new Date().toISOString().split('T')[0]
+    supabase.from('credits').select('membership_type')
+      .eq('client_firebase_uid', user.uid).eq('is_active', true)
+      .lte('starts_at', today).gte('expires_at', today)
+      .order('expires_at').limit(1).maybeSingle()
+      .then(({ data }) => setMembership(data?.membership_type || null))
+  }, [user])
 
   if (loading) return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
@@ -44,9 +58,18 @@ function AppInner() {
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <div style={{ background: 'white', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '56px', gap: '10px' }}>
-          <img src="/logo.png" alt="BaseGym BB" style={{ width: '32px', height: '32px', objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/logo.png" alt="BaseGym BB" style={{ width: '38px', height: '38px', objectFit: 'contain', flexShrink: 0 }} />
           <span className="display" style={{ fontSize: '18px', color: 'var(--green-dark)', flex: 1 }}>BaseGym BB</span>
-          {profile && <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)', marginRight: '4px' }}>{pickAvatarEmoji(user?.uid, profile.full_name)} {profile.nickname || profile.full_name?.split(' ')[0]}</span>}
+          {profile && (
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '4px' }}>
+              <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)' }}>{pickAvatarEmoji(user?.uid, profile.full_name)} {profile.nickname || profile.full_name?.split(' ')[0]}</span>
+              {membership && (
+                <span style={{ background: 'var(--green-bg)', color: 'var(--green-dark)', fontSize: '11px', fontWeight: '700', padding: '3px 9px', borderRadius: '999px' }}>
+                  {MEMBERSHIP_LABEL[membership] || membership}
+                </span>
+              )}
+            </span>
+          )}
           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             {tabs.map(t => (
               <button key={t.id} onClick={() => setTab(t.id)} style={{
