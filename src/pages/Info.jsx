@@ -8,8 +8,8 @@ export default function Info() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {[
             { name: 'Gold', desc: 'neobmedzený počet tréningov', price: '80 €/mesiac', color: '#F4A81E' },
-            { name: 'Silver', desc: '12 kreditov', price: '70 €/mesiac', color: '#9CA3AF' },
-            { name: 'Basic kurz', desc: '8 kreditov', price: '80 €/mesiac', color: '#6FCF97' },
+            { name: 'Silver', desc: '10 kreditov', price: '70 €/mesiac', color: '#9CA3AF' },
+            { name: 'Basic kurz', desc: '5 kreditov', price: '80 €/mesiac', color: '#6FCF97' },
             { name: 'Jednorázový vstup', desc: '1 kredit', price: '12 €', color: 'var(--green)' },
           ].map(p => (
             <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '12px', background: 'var(--bg)', border: '1px solid var(--border)' }}>
