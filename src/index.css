@@ -54,16 +54,16 @@
   --radius-full: 999px;
 }
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: var(--bg);
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
-input, select, textarea, button { font-family: 'DM Sans', sans-serif; font-size: 14px; }
+input, select, textarea, button { font-family: 'Poppins', sans-serif; font-size: 14px; }
 
-.display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.5px; font-weight: 400; }
+.display { font-family: 'Poppins', sans-serif; font-weight: 800; letter-spacing: 0.3px; }
 
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
 
