@@ -11,6 +11,7 @@ export default function Calendar() {
   const [reservations, setReservations] = useState([])
   const [credits, setCredits] = useState(null)
   const [lastCredit, setLastCredit] = useState(null)
+  const [dayPlans, setDayPlans] = useState({})
   const [motivationBanner, setMotivationBanner] = useState(null)
   const [goalHistory, setGoalHistory] = useState([])
   const [trainerNames, setTrainerNames] = useState({})
@@ -87,6 +88,12 @@ export default function Calendar() {
       .eq('is_cancelled', false)
       .order('starts_at')
     setTrainings(tr || [])
+    const dayKey = d => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}` }
+    const { data: plansData } = await supabase.from('training_day_plans').select('*')
+      .gte('plan_date', dayKey(now)).lte('plan_date', dayKey(maxDate))
+    const pm = {}
+    ;(plansData || []).forEach(p => { pm[p.plan_date] = p })
+    setDayPlans(pm)
     const trainerIds = [...new Set((tr || []).map(t => t.claimed_by_trainer_id).filter(Boolean))]
     if (trainerIds.length) {
       const { data: trs } = await supabase.from('trainer_directory').select('id, full_name').in('id', trainerIds)
@@ -263,6 +270,18 @@ export default function Calendar() {
                 <div style={{ textAlign: 'center', marginBottom: '14px' }}>
                   <div className="display" style={{ fontSize: '30px', color: 'var(--text)', lineHeight: 1.1 }}>{day.getDate()}. {day.getMonth() + 1}. {day.getFullYear()}</div>
                   <div style={{ fontSize: '14px', color: isToday ? 'var(--green)' : 'var(--text-muted)', marginTop: '2px', fontWeight: isToday ? '600' : '400' }}>{isToday ? 'Dnes' : isTomorrow ? 'Zajtra' : DAYS_SK[day.getDay()]}</div>
+                  {(() => {
+                    const pk = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+                    const plan = dayPlans[pk]
+                    if (!plan?.title) return null
+                    return (
+                      <div style={{ marginTop: '10px', background: 'var(--green-bg)', borderRadius: '10px', padding: '9px 14px', display: 'inline-block', maxWidth: '90%' }}>
+                        <div style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green-dark)' }}>Náplň dňa</div>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginTop: '2px' }}>{plan.title}</div>
+                        {plan.description && <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{plan.description}</div>}
+                      </div>
+                    )
+                  })()}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {dayTrainings.map(t => {
