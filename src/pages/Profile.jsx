@@ -112,19 +112,19 @@ export default function Profile() {
       {loading ? <p style={{ color: 'var(--text-muted)' }}>Načítavam...</p> : (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0,1fr))', gap: '10px', marginBottom: '20px' }}>
-            <div className={`scoreboard-panel ${!activeCredit ? 'urgent' : ''}`}>
-              <div className="label">Zostatok</div>
-              <div className={`num ${!activeCredit ? 'urgent' : ''}`} style={{ fontSize: '24px' }}>{activeCredit?.amount || 0}</div>
-              <div style={{ fontSize: '11px', color: '#9C9A92' }}>kreditov</div>
+            <div style={{ background: !activeCredit ? '#FEE2E2' : '#15171A', borderRadius: '12px', padding: '14px', border: !activeCredit ? '2px solid #EF4444' : 'none' }}>
+              <div style={{ fontSize: '9.5px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', color: !activeCredit ? '#991B1B' : '#9C9A92' }}>Zostatok</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'DM Mono, monospace', color: !activeCredit ? '#991B1B' : 'var(--score-text)' }}>{activeCredit?.amount || 0}</div>
+              <div style={{ fontSize: '11px', color: !activeCredit ? '#B91C1C' : '#9C9A92' }}>kreditov</div>
             </div>
-            <div className={`scoreboard-panel ${expiryUrgent ? 'urgent' : ''}`}>
-              <div className="label">Platné do</div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: expiryUrgent ? 'var(--score-text-urgent)' : 'var(--score-text)', fontFamily: 'DM Mono, monospace' }}>{activeCredit ? new Date(activeCredit.expires_at).toLocaleDateString('sk-SK') : '—'}</div>
-              {expiryUrgent && <div style={{ fontSize: '10.5px', color: 'var(--score-text-urgent)', marginTop: '2px' }}>posledných {daysUntilExpiry} dní</div>}
+            <div style={{ background: expiryUrgent ? '#FEE2E2' : '#15171A', borderRadius: '12px', padding: '14px', border: expiryUrgent ? '2px solid #EF4444' : 'none' }}>
+              <div style={{ fontSize: '9.5px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', color: expiryUrgent ? '#991B1B' : '#9C9A92' }}>Platné do</div>
+              <div style={{ fontSize: '18px', fontWeight: '700', fontFamily: 'DM Mono, monospace', color: expiryUrgent ? '#991B1B' : 'var(--score-text)' }}>{activeCredit ? new Date(activeCredit.expires_at).toLocaleDateString('sk-SK') : '—'}</div>
+              {expiryUrgent && <div style={{ fontSize: '12px', fontWeight: '700', color: '#EF4444', marginTop: '2px' }}>⚠ {daysUntilExpiry} {daysUntilExpiry === 1 ? 'deň' : 'dní'}!</div>}
             </div>
-            <div className="scoreboard-panel">
-              <div className="label">Tréningov</div>
-              <div className="num" style={{ fontSize: '24px' }}>{totalTrainings}</div>
+            <div style={{ background: '#15171A', borderRadius: '12px', padding: '14px' }}>
+              <div style={{ fontSize: '9.5px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#9C9A92' }}>Tréningov</div>
+              <div style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'DM Mono, monospace', color: 'var(--score-text)' }}>{totalTrainings}</div>
               <div style={{ fontSize: '11px', color: '#9C9A92' }}>celkom</div>
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function Profile() {
             </div>
 
             {showGoalPicker && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.25)' }}>
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.25)', position: 'relative', zIndex: 2 }}>
                 {GOAL_PRESETS.map(p => (
                   <div key={p.goal} onClick={() => setGoal(p.goal)} style={{
                     display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer',
@@ -283,6 +283,26 @@ export default function Profile() {
                 Zobraziť ďalšie ({logs.length - visibleLogs})
               </button>
             )}
+          </div>
+
+          <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-hint)', margin: '20px 2px 9px' }}>Informácie</div>
+          <div className="card" style={{ padding: '18px 20px', marginBottom: '14px' }}>
+            <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>Cenník permanentiek</h4>
+            <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+              Gold (neobmedzené) — 59 €/mesiac<br/>
+              Silver (12 kreditov) — 45 €/mesiac<br/>
+              Basic kurz (8 kreditov) — 35 €/mesiac<br/>
+              Jednorázový vstup — 6 €
+            </div>
+          </div>
+          <div className="card" style={{ padding: '18px 20px', marginBottom: '14px' }}>
+            <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>Pravidlá prihlasovania</h4>
+            <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', lineHeight: 1.7 }}>
+              • Na tréning sa prihlás vopred cez appku<br/>
+              • 1 tréning = 1 kredit<br/>
+              • Odhlásiť sa je možné najneskôr 30 min pred začiatkom — inak kredit prepadáva<br/>
+              • Kapacita je obmedzená — ak je plno, sleduj voľné miesta
+            </div>
           </div>
         </>
       )}

@@ -194,14 +194,19 @@ export default function Calendar() {
   return (
     <div style={{ maxWidth: '680px', margin: '0 auto' }}>
       {credits ? (
-        <div className={`scoreboard-panel ${expiryUrgent ? 'urgent' : ''}`} style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{
+          marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px',
+          background: expiryUrgent ? '#FEE2E2' : '#15171A', borderRadius: '14px', padding: '18px 20px',
+          border: expiryUrgent ? '2px solid #EF4444' : '2px solid transparent'
+        }}>
           <div>
-            <div className="label">Zostáva</div>
-            <div className={`num ${expiryUrgent ? 'urgent' : ''}`}>{credits.amount}<span style={{ fontSize: '13px', fontWeight: '400', color: '#9C9A92', marginLeft: '6px' }}>kreditov</span></div>
+            <div style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: expiryUrgent ? '#991B1B' : '#9C9A92' }}>Zostáva</div>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: expiryUrgent ? '30px' : '28px', fontWeight: '700', color: expiryUrgent ? '#991B1B' : 'var(--score-text)' }}>{credits.amount}<span style={{ fontSize: '14px', fontWeight: '400', color: expiryUrgent ? '#B91C1C' : '#9C9A92', marginLeft: '6px' }}>kreditov</span></div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div className={`exp ${expiryUrgent ? 'urgent' : ''}`}>platné do {new Date(credits.expires_at).toLocaleDateString('sk-SK')}</div>
-            {expiryUrgent && <div style={{ fontSize: '11px', color: 'var(--score-text-urgent)', marginTop: '2px' }}>posledných {daysUntilExpiry} {daysUntilExpiry === 1 ? 'deň' : 'dní'}</div>}
+            <div style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: expiryUrgent ? '#991B1B' : '#9C9A92' }}>Platné do</div>
+            <div style={{ fontFamily: 'DM Mono, monospace', fontSize: expiryUrgent ? '20px' : '16px', fontWeight: '700', color: expiryUrgent ? '#991B1B' : 'var(--score-text)' }}>{new Date(credits.expires_at).toLocaleDateString('sk-SK')}</div>
+            {expiryUrgent && <div style={{ fontSize: '13px', fontWeight: '700', color: '#EF4444', marginTop: '4px' }}>⚠ posledných {daysUntilExpiry} {daysUntilExpiry === 1 ? 'deň' : 'dní'}!</div>}
           </div>
         </div>
       ) : lastCredit ? (
@@ -341,7 +346,10 @@ export default function Calendar() {
                               </button>
                             </div>
                             {reserved ? (
-                              <button onClick={() => cancel(t)} className="btn btn-red" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Odhlásiť</button>
+                              <div style={{ textAlign: 'right' }}>
+                                <button onClick={() => cancel(t)} className="btn btn-red" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Odhlásiť</button>
+                                <div style={{ fontSize: '9.5px', color: 'var(--text-hint)', marginTop: '4px' }}>Najneskôr 30 min pred začiatkom</div>
+                              </div>
                             ) : !past && (
                               full ? (
                                 <button disabled style={{ background: '#F2F2EF', border: '1px solid var(--border-md)', color: 'var(--text-hint)', padding: '8px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'default' }}>Plné</button>

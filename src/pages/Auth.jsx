@@ -10,6 +10,7 @@ export default function Auth() {
   const [nickname, setNickname] = useState('')
   const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
+  const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e) {
@@ -67,7 +68,12 @@ export default function Auth() {
               </>
             )}
             <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Email *</label><input className="input" type="email" placeholder="jan@email.sk" value={email} onChange={e => setEmail(e.target.value)} required /></div>
-            <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Heslo *</label><input className="input" type="password" placeholder="min. 6 znakov" value={password} onChange={e => setPassword(e.target.value)} required /></div>
+            <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Heslo *</label>
+              <div style={{ position: 'relative' }}>
+                <input className="input" type={showPass ? 'text' : 'password'} placeholder="min. 6 znakov" value={password} onChange={e => setPassword(e.target.value)} required style={{ paddingRight: '44px' }} />
+                <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>{showPass ? '🙈' : '👁'}</button>
+              </div>
+            </div>
             {error && <div className="info-box info-red">{error}</div>}
             <button type="submit" disabled={loading} style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: '600', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '4px' }}>
               {loading ? 'Moment...' : mode === 'login' ? 'Prihlásiť sa' : 'Vytvoriť účet'}
