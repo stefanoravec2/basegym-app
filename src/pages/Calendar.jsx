@@ -12,6 +12,7 @@ export default function Calendar() {
   const [credits, setCredits] = useState(null)
   const [lastCredit, setLastCredit] = useState(null)
   const [dayPlans, setDayPlans] = useState({})
+  const [expandedPlan, setExpandedPlan] = useState(null)
   const [motivationBanner, setMotivationBanner] = useState(null)
   const [goalHistory, setGoalHistory] = useState([])
   const [trainerNames, setTrainerNames] = useState({})
@@ -274,11 +275,22 @@ export default function Calendar() {
                     const pk = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
                     const plan = dayPlans[pk]
                     if (!plan?.title) return null
+                    const isPlanOpen = expandedPlan === pk
                     return (
-                      <div style={{ marginTop: '10px', background: 'var(--green-bg)', borderRadius: '10px', padding: '9px 14px', display: 'inline-block', maxWidth: '90%' }}>
-                        <div style={{ fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green-dark)' }}>Náplň dňa</div>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginTop: '2px' }}>{plan.title}</div>
-                        {plan.description && <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{plan.description}</div>}
+                      <div style={{ marginTop: '8px' }}>
+                        <button onClick={() => setExpandedPlan(isPlanOpen ? null : pk)} style={{
+                          background: 'var(--green-bg)', color: 'var(--green-dark)', border: 'none', borderRadius: '20px',
+                          padding: '6px 14px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px'
+                        }}>
+                          📋 Náplň dňa
+                          <span style={{ fontSize: '9px' }}>{isPlanOpen ? '▲' : '▼'}</span>
+                        </button>
+                        {isPlanOpen && (
+                          <div style={{ marginTop: '8px', background: 'var(--green-bg)', borderRadius: '10px', padding: '9px 14px', display: 'inline-block', maxWidth: '90%', textAlign: 'left' }}>
+                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>{plan.title}</div>
+                            {plan.description && <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{plan.description}</div>}
+                          </div>
+                        )}
                       </div>
                     )
                   })()}
