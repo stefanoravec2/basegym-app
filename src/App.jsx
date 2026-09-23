@@ -49,19 +49,19 @@ function AppInner() {
   if (!user) return <Auth />
 
   const tabs = [
-    { id: 'calendar', label: 'Rezervácie' },
-    { id: 'profile', label: 'Môj profil' },
+    { id: 'calendar', label: 'Rezervácie', icon: '📅' },
+    { id: 'profile', label: 'Môj profil', icon: '👤' },
   ]
-  if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner' })
+  if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner', icon: '🧑‍🏫' })
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <div style={{ background: 'white', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '56px', gap: '10px' }}>
-          <img src="/logo.png" alt="BaseGym BB" style={{ width: '38px', height: '38px', objectFit: 'contain', flexShrink: 0 }} />
+          <img src="/logo.png" alt="BaseGym BB" style={{ width: '32px', height: '32px', objectFit: 'contain', flexShrink: 0, borderRadius: '8px' }} />
           <span className="display" style={{ fontSize: '18px', color: 'var(--green-dark)', flex: 1 }}>BaseGym BB</span>
           {profile && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '4px' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)' }}>{pickAvatarEmoji(user?.uid, profile.full_name)} {profile.nickname || profile.full_name?.split(' ')[0]}</span>
               {membership && (
                 <span style={{ background: 'var(--green-bg)', color: 'var(--green-dark)', fontSize: '11px', fontWeight: '700', padding: '3px 9px', borderRadius: '999px' }}>
@@ -70,23 +70,30 @@ function AppInner() {
               )}
             </span>
           )}
-          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-            {tabs.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{
-                padding: '6px 14px', borderRadius: '999px',
-                border: `1.5px solid ${tab === t.id ? 'var(--green)' : 'transparent'}`,
-                background: tab === t.id ? 'var(--green-bg)' : 'none',
-                color: tab === t.id ? 'var(--green-dark)' : 'var(--text-muted)',
-                fontWeight: tab === t.id ? '600' : '400', fontSize: '13px', cursor: 'pointer'
-              }}>{t.label}</button>
-            ))}
-          </div>
         </div>
       </div>
-      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '24px 20px' }}>
+      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '20px 20px 90px', width: '100%', flex: 1 }}>
         {tab === 'calendar' && <Calendar />}
         {tab === 'profile' && <Profile />}
         {tab === 'trainer' && isTrainer && <TrainerPanel />}
+      </div>
+      <div style={{
+        position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid var(--border)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)', zIndex: 100
+      }}>
+        <div style={{ maxWidth: '680px', margin: '0 auto', display: 'flex', padding: '8px 0' }}>
+          {tabs.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)} style={{
+              flex: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
+              color: tab === t.id ? 'var(--green-dark)' : 'var(--text-hint)',
+              fontWeight: tab === t.id ? '700' : '400', fontSize: '10.5px'
+            }}>
+              <span style={{ fontSize: '19px' }}>{t.icon}</span>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   )

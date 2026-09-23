@@ -9,6 +9,7 @@ export default function Calendar() {
   const [trainings, setTrainings] = useState([])
   const [reservations, setReservations] = useState([])
   const [credits, setCredits] = useState(null)
+  const [lastCredit, setLastCredit] = useState(null)
   const [trainerNames, setTrainerNames] = useState({})
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState({ text: '', type: 'green' })
@@ -59,6 +60,16 @@ export default function Calendar() {
       .limit(1)
       .maybeSingle()
     setCredits(cr || null)
+    if (!cr) {
+      const { data: lc } = await supabase
+        .from('credits')
+        .select('*')
+        .eq('client_firebase_uid', user.uid)
+        .order('expires_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      setLastCredit(lc || null)
+    }
     setLoading(false)
   }
 
@@ -119,18 +130,30 @@ export default function Calendar() {
 
   return (
     <div style={{ maxWidth: '680px', margin: '0 auto' }}>
-      <div className={`scoreboard-panel ${expiryUrgent ? 'urgent' : ''}`} style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
-        <div>
-          <div className="label">Zostáva</div>
-          <div className={`num ${expiryUrgent ? 'urgent' : ''}`}>{credits ? credits.amount : 0}<span style={{ fontSize: '13px', fontWeight: '400', color: '#9C9A92', marginLeft: '6px' }}>kreditov</span></div>
-        </div>
-        {credits ? (
+      {credits ? (
+        <div className={`scoreboard-panel ${expiryUrgent ? 'urgent' : ''}`} style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <div className="label">Zostáva</div>
+            <div className={`num ${expiryUrgent ? 'urgent' : ''}`}>{credits.amount}<span style={{ fontSize: '13px', fontWeight: '400', color: '#9C9A92', marginLeft: '6px' }}>kreditov</span></div>
+          </div>
           <div style={{ textAlign: 'right' }}>
             <div className={`exp ${expiryUrgent ? 'urgent' : ''}`}>platné do {new Date(credits.expires_at).toLocaleDateString('sk-SK')}</div>
             {expiryUrgent && <div style={{ fontSize: '11px', color: 'var(--score-text-urgent)', marginTop: '2px' }}>posledných {daysUntilExpiry} {daysUntilExpiry === 1 ? 'deň' : 'dní'}</div>}
           </div>
-        ) : <span className="badge badge-red">Žiadne aktívne kredity</span>}
-      </div>
+        </div>
+      ) : lastCredit ? (
+        <div className="welcome-card amber">
+          <div className="ring">⏳</div>
+          <h3 className="display">Permanentka vypršala</h3>
+          <p>Tvoje kredity platili do {new Date(lastCredit.expires_at).toLocaleDateString('sk-SK')}. Obnov si permanentku u trénera a môžeš znova rezervovať.</p>
+        </div>
+      ) : (
+        <div className="welcome-card">
+          <div className="ring">👋</div>
+          <h3 className="display">Vitaj v BaseGym!</h3>
+          <p>Ešte nemáš aktívne kredity. Príď na recepciu alebo napíš trénerovi, nech ti aktivuje prvú permanentku.</p>
+        </div>
+      )}
       {actionMsg.text && (
         <div className={`info-box ${actionMsg.type === 'red' ? 'info-red' : 'info-green'}`} style={{
           position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
@@ -163,7 +186,14 @@ export default function Calendar() {
                     const past = new Date(t.starts_at) < new Date()
                     const isExp = expanded === t.id
                     return (
-                      <div key={t.id} style={{ borderRadius: '14px', background: reserved ? 'var(--green-bg)' : 'white', border: `1.5px solid ${reserved ? 'var(--green)' : 'var(--border-md)'}`, overflow: 'hidden' }}>
+                      <div key={t.id} style={{
+                        borderRadius: '14px', overflow: 'hidden',
+                        background: reserved ? 'var(--green-bg)' : full ? '#F1EFEB' : 'white',
+                        border: reserved ? '1.5px solid var(--green)' : full ? '1.5px dashed rgba(21,23,26,0.16)' : '1.5px solid rgba(21,23,26,0.16)',
+                        borderLeft: reserved ? '1.5px solid var(--green)' : full ? '4px solid rgba(21,23,26,0.16)' : '4px solid var(--green)',
+                        opacity: full && !reserved ? 0.75 : 1,
+                        boxShadow: reserved ? 'none' : '0 2px 8px rgba(0,0,0,0.06)',
+                      }}>
                         <div style={{ padding: '16px 20px' }}>
                           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flex: 1 }}>

@@ -77,3 +77,19 @@ input, select, textarea, button { font-family: 'DM Sans', sans-serif; font-size:
 
 .trainer-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--green-bg); color: var(--green-dark); border-radius: var(--radius-full); padding: 3px 9px 3px 5px; font-size: 11.5px; font-weight: 500; }
 .trainer-chip .emoji { width: 16px; height: 16px; background: var(--surface); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+
+/* Welcome / renewal card shown when a client has no active credits */
+.welcome-card {
+  position: relative; overflow: hidden;
+  background: linear-gradient(160deg, #2A5F2D 0%, #1D491F 65%, #163915 100%);
+  color: white; border-radius: 18px; padding: 22px 20px; margin-bottom: 16px;
+  box-shadow: 0 10px 24px rgba(29,73,31,0.3);
+}
+.welcome-card::after {
+  content: ''; position: absolute; right: -30px; top: -30px; width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08), transparent 70%);
+}
+.welcome-card.amber { background: linear-gradient(160deg, #C2790F 0%, #9A5F0B 65%, #7A4A08 100%); box-shadow: 0 10px 24px rgba(154,95,11,0.28); }
+.welcome-card .ring { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
+.welcome-card h3 { font-size: 21px; margin-bottom: 7px; letter-spacing: 0.5px; }
+.welcome-card p { font-size: 12.5px; opacity: 0.88; line-height: 1.55; max-width: 88%; }
