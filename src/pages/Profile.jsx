@@ -151,8 +151,8 @@ export default function Profile() {
             </div>
             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.25)', fontSize: '11.5px', opacity: 0.9, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>Osobný rekord: <b style={{ fontFamily: 'DM Mono, monospace', fontWeight: '700' }}>{streak.record} {streak.record === 1 ? 'týždeň' : 'týždňov'}</b> 🏆</span>
-              <button onClick={() => setShowGoalPicker(v => !v)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '20px', padding: '4px 10px', color: 'white', fontSize: '10.5px', fontWeight: '700', cursor: 'pointer' }}>
-                Cieľ: {currentGoal}× ✎
+              <button onClick={() => setShowGoalPicker(v => !v)} style={{ background: 'rgba(255,255,255,0.22)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '20px', padding: '9px 14px', color: 'white', fontSize: '12px', fontWeight: '700', cursor: 'pointer', position: 'relative', zIndex: 2, minHeight: '36px' }}>
+                Zmeniť cieľ: {currentGoal}× ✎
               </button>
             </div>
 
