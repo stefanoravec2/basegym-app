@@ -277,18 +277,21 @@ export default function Calendar() {
                     if (!plan?.title) return null
                     const isPlanOpen = expandedPlan === pk
                     return (
-                      <div style={{ marginTop: '8px' }}>
+                      <div style={{ marginTop: '12px', textAlign: 'left' }}>
                         <button onClick={() => setExpandedPlan(isPlanOpen ? null : pk)} style={{
-                          background: 'var(--green-bg)', color: 'var(--green-dark)', border: 'none', borderRadius: '20px',
-                          padding: '6px 14px', fontSize: '12px', fontWeight: '700', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px'
+                          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          background: 'var(--green)', color: 'white', border: 'none',
+                          borderRadius: isPlanOpen ? '14px 14px 0 0' : '14px',
+                          padding: '15px 18px', fontSize: '15px', fontWeight: '700', cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(56,142,60,0.28)'
                         }}>
-                          📋 Náplň dňa
-                          <span style={{ fontSize: '9px' }}>{isPlanOpen ? '▲' : '▼'}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>🏋 Tréning dňa</span>
+                          <span style={{ fontSize: '12px', opacity: 0.9 }}>{isPlanOpen ? '▲' : '▼'}</span>
                         </button>
                         {isPlanOpen && (
-                          <div style={{ marginTop: '8px', background: 'var(--green-bg)', borderRadius: '10px', padding: '9px 14px', display: 'inline-block', maxWidth: '90%', textAlign: 'left' }}>
-                            <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>{plan.title}</div>
-                            {plan.description && <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>{plan.description}</div>}
+                          <div style={{ background: 'var(--green-bg)', border: '2px solid var(--green)', borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '16px 18px' }}>
+                            <div style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>{plan.title}</div>
+                            {plan.description && <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '5px', lineHeight: 1.5 }}>{plan.description}</div>}
                           </div>
                         )}
                       </div>
