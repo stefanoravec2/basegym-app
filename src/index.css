@@ -125,7 +125,7 @@ input, select, textarea, button { font-family: 'Poppins', sans-serif; font-size:
 
 /* Streak & monthly progress cards */
 .streak-hero {
-  position: relative; overflow: hidden; border-radius: 18px; padding: 18px 20px;
+  position: relative; border-radius: 18px; padding: 18px 20px;
   background: linear-gradient(155deg, var(--grad-from), var(--grad-to));
   color: white; box-shadow: 0 10px 26px rgba(29,73,31,0.28);
 }

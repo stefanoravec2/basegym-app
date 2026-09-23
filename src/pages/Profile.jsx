@@ -159,17 +159,17 @@ export default function Profile() {
             {showGoalPicker && (
               <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.25)', position: 'relative', zIndex: 2 }}>
                 {GOAL_PRESETS.map(p => (
-                  <div key={p.goal} onClick={() => setGoal(p.goal)} style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer',
+                  <button key={p.goal} onClick={() => setGoal(p.goal)} style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer', width: '100%', textAlign: 'left',
                     background: currentGoal === p.goal ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
-                    border: currentGoal === p.goal ? '1.5px solid white' : '1.5px solid transparent'
+                    border: currentGoal === p.goal ? '1.5px solid white' : '1.5px solid transparent', color: 'white'
                   }}>
                     <span style={{ fontSize: '20px' }}>{p.icon}</span>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '12.5px', fontWeight: '700' }}>{p.title} {p.recommended && <span style={{ fontSize: '9.5px', fontWeight: '700', opacity: 0.85 }}>⭐ odporúčané</span>}</div>
                       <div style={{ fontSize: '10.5px', opacity: 0.85 }}>{p.sub} — {p.desc}</div>
                     </div>
-                  </div>
+                  </button>
                 ))}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)' }}>
                   <span style={{ fontSize: '20px' }}>⚙️</span>
@@ -303,8 +303,7 @@ export default function Profile() {
               • Odhlásiť sa je možné najneskôr 30 min pred začiatkom — inak kredit prepadáva<br/>
               • Kapacita je obmedzená — ak je plno, sleduj voľné miesta
             </div>
-          </div>
-        </>
+          </div>        </>
       )}
     </div>
   )

@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Auth from './pages/Auth'
 import Calendar from './pages/Calendar'
 import Profile from './pages/Profile'
+import Info from './pages/Info'
 import TrainerPanel from './pages/TrainerPanel'
 import { supabase } from './lib/supabase'
 import './index.css'
@@ -60,6 +61,7 @@ function AppInner() {
   const tabs = [
     { id: 'calendar', label: 'Rezervácie', icon: '📅' },
     { id: 'profile', label: 'Môj profil', icon: '👤' },
+    { id: 'info', label: 'Informácie', icon: 'ℹ️' },
   ]
   if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner', icon: '🧑‍🏫' })
 
@@ -101,6 +103,7 @@ function AppInner() {
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '20px 20px 40px' }}>
         {tab === 'calendar' && <Calendar />}
         {tab === 'profile' && <Profile />}
+        {tab === 'info' && <Info />}
         {tab === 'trainer' && isTrainer && <TrainerPanel />}
       </div>
     </div>
