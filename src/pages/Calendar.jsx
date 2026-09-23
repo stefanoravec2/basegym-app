@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { getAttendedDates, computeStreak, computeBadges } from '../lib/progress'
+import { getAttendedDates, computeStreak, computeBadges, currentWeekProgress } from '../lib/progress'
 
 const DAYS_SK = ['nedeľa','pondelok','utorok','streda','štvrtok','piatok','sobota']
 
@@ -12,6 +12,7 @@ export default function Calendar() {
   const [credits, setCredits] = useState(null)
   const [lastCredit, setLastCredit] = useState(null)
   const [motivationBanner, setMotivationBanner] = useState(null)
+  const [goalHistory, setGoalHistory] = useState([])
   const [trainerNames, setTrainerNames] = useState({})
   const [loading, setLoading] = useState(true)
   const [actionMsg, setActionMsg] = useState({ text: '', type: 'green' })
@@ -29,7 +30,7 @@ export default function Calendar() {
       .sort((a, b) => b - a)
     const lastVisit = pastVisits[0] || null
     const daysSince = lastVisit ? Math.floor((now - lastVisit) / 86400000) : null
-    const recentCount = pastVisits.filter(d => (now - d) <= 7 * 86400000).length
+    const weekProgress = currentWeekProgress(getAttendedDates(reservations), goalHistory)
 
     const todayKey = now.toISOString().split('T')[0]
     const jan1 = new Date(now.getFullYear(), 0, 1)
@@ -41,7 +42,7 @@ export default function Calendar() {
         setMotivationBanner('absence')
         return
       }
-    } else if (recentCount >= 3) {
+    } else if (weekProgress.met) {
       if (localStorage.getItem('bg_streak_shown') !== weekKey) {
         localStorage.setItem('bg_streak_shown', weekKey)
         setMotivationBanner('streak')
@@ -52,7 +53,7 @@ export default function Calendar() {
     // Nový odznak / osobný rekord — ukáže sa raz, keď sa dosiahnutá hodnota zvýši oproti naposledy zaznamenanej
     const attendedDates = getAttendedDates(reservations)
     const badges = computeBadges(attendedDates, profile?.created_at)
-    const streakInfo = computeStreak(attendedDates)
+    const streakInfo = computeStreak(attendedDates, goalHistory)
     const earnedIds = badges.filter(b => b.earned).map(b => b.id)
     const prevBadges = JSON.parse(localStorage.getItem('bg_badges_earned') || '[]')
     const newBadge = badges.find(b => b.earned && !prevBadges.includes(b.id))
@@ -68,7 +69,7 @@ export default function Calendar() {
       setMotivationBanner({ type: 'record', weeks: streakInfo.record })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, credits, reservations])
+  }, [loading, credits, reservations, goalHistory])
 
   async function loadData() {
     setLoading(true)
@@ -112,6 +113,8 @@ export default function Calendar() {
       .limit(1)
       .maybeSingle()
     setCredits(cr || null)
+    const { data: gh } = await supabase.from('client_goal_history').select('*').eq('client_firebase_uid', user.uid).order('effective_from', { ascending: true })
+    setGoalHistory(gh || [])
     if (!cr) {
       const { data: lc } = await supabase
         .from('credits')

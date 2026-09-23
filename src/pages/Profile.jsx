@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { getAttendedDates, computeStreak, computeBadges, computeMonthlyStats, weekBuckets, heatLevel } from '../lib/progress'
+import { getAttendedDates, computeStreak, computeBadges, computeMonthlyStats, weekBuckets, heatLevel, currentWeekProgress, DEFAULT_GOAL } from '../lib/progress'
+
+const GOAL_PRESETS = [
+  { goal: 2, icon: '🟢', title: 'Voľné tempo', sub: '1–2×/týždeň', desc: 'Udržiavanie formy, pravidelný pohyb bez tlaku.' },
+  { goal: 3, icon: '🔵', title: 'Vyvážený pokrok', sub: '3×/týždeň', desc: 'Hranica, od ktorej väčšina ľudí vidí reálny výkonnostný posun.', recommended: true },
+  { goal: 4, icon: '🟠', title: 'Zrýchlený pokrok', sub: '4–5×/týždeň', desc: 'Pre tých, čo chcú výsledky rýchlejšie. Nezabudni na regeneráciu.' },
+]
 
 export default function Profile() {
   const { user, profile, signOut } = useAuth()
@@ -9,6 +15,9 @@ export default function Profile() {
   const [logs, setLogs] = useState([])
   const [reservations, setReservations] = useState([])
   const [statsReservations, setStatsReservations] = useState([])
+  const [goalHistory, setGoalHistory] = useState([])
+  const [showGoalPicker, setShowGoalPicker] = useState(false)
+  const [customGoal, setCustomGoal] = useState(3)
   const [loading, setLoading] = useState(true)
   const [editMode, setEditMode] = useState(false)
   const [visibleTrainings, setVisibleTrainings] = useState(5)
@@ -33,7 +42,24 @@ export default function Profile() {
     setReservations(res || [])
     const { data: allRes } = await supabase.from('reservations').select('status, trainings(starts_at)').eq('client_firebase_uid', user.uid).eq('status', 'active').limit(2000)
     setStatsReservations(allRes || [])
+    const { data: gh } = await supabase.from('client_goal_history').select('*').eq('client_firebase_uid', user.uid).order('effective_from', { ascending: true })
+    setGoalHistory(gh || [])
     setLoading(false)
+  }
+
+  async function setGoal(goal) {
+    setSaving(true)
+    const today = new Date().toISOString().split('T')[0]
+    // ak sa cieľ mení opakovane v ten istý deň, len ho prepíšeme namiesto hromadenia záznamov
+    const todays = goalHistory.find(h => h.effective_from === today)
+    if (todays) {
+      await supabase.from('client_goal_history').update({ goal }).eq('id', todays.id)
+    } else {
+      await supabase.from('client_goal_history').insert({ client_firebase_uid: user.uid, goal, effective_from: today })
+    }
+    await loadData()
+    setShowGoalPicker(false)
+    setSaving(false)
   }
 
   const activeCredit = credits.find(c => c.is_active && new Date(c.starts_at) <= new Date() && new Date(c.expires_at) >= new Date())
@@ -42,10 +68,12 @@ export default function Profile() {
   const expiryUrgent = activeCredit && daysUntilExpiry <= 5
 
   const attendedDates = getAttendedDates(statsReservations)
-  const streak = computeStreak(attendedDates)
+  const streak = computeStreak(attendedDates, goalHistory)
   const badges = computeBadges(attendedDates, profile?.created_at)
   const monthly = computeMonthlyStats(attendedDates)
   const buckets = weekBuckets(attendedDates, 28)
+  const weekProgress = currentWeekProgress(attendedDates, goalHistory)
+  const currentGoal = weekProgress.goal
 
   async function saveProfile() {
     setSaving(true)
@@ -109,13 +137,52 @@ export default function Profile() {
               <div className="flame" style={{ fontSize: '38px', lineHeight: 1 }}>🔥</div>
               <div>
                 <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '26px', fontWeight: '700', lineHeight: 1 }}>{streak.current} {streak.current === 1 ? 'týždeň' : streak.current >= 2 && streak.current <= 4 ? 'týždne' : 'týždňov'}</div>
-                <div style={{ fontSize: '12px', opacity: 0.92, marginTop: '2px' }}>{streak.current > 0 ? 'v sérii — každý týždeň si splnil svoj cieľ' : 'zatiaľ bez aktívnej série — 3 tréningy/týždeň ju naštartujú'}</div>
+                <div style={{ fontSize: '12px', opacity: 0.92, marginTop: '2px' }}>{streak.current > 0 ? 'v sérii — každý týždeň si splnil svoj cieľ' : 'zatiaľ bez aktívnej série'}</div>
               </div>
             </div>
-            <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.25)', fontSize: '11.5px', opacity: 0.9, display: 'flex', justifyContent: 'space-between' }}>
-              <span>Osobný rekord</span>
-              <b style={{ fontFamily: 'DM Mono, monospace', fontWeight: '700' }}>{streak.record} {streak.record === 1 ? 'týždeň' : 'týždňov'} 🏆</b>
+            <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.25)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11.5px', opacity: 0.9, marginBottom: '6px' }}>
+                <span>Tento týždeň</span>
+                <b style={{ fontFamily: 'DM Mono, monospace', fontWeight: '700' }}>{weekProgress.count}/{weekProgress.goal}</b>
+              </div>
+              <div style={{ height: '6px', borderRadius: '4px', background: 'rgba(255,255,255,0.22)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${Math.min(100, (weekProgress.count / weekProgress.goal) * 100)}%`, background: 'white', borderRadius: '4px' }} />
+              </div>
             </div>
+            <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.25)', fontSize: '11.5px', opacity: 0.9, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>Osobný rekord: <b style={{ fontFamily: 'DM Mono, monospace', fontWeight: '700' }}>{streak.record} {streak.record === 1 ? 'týždeň' : 'týždňov'}</b> 🏆</span>
+              <button onClick={() => setShowGoalPicker(v => !v)} style={{ background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: '20px', padding: '4px 10px', color: 'white', fontSize: '10.5px', fontWeight: '700', cursor: 'pointer' }}>
+                Cieľ: {currentGoal}× ✎
+              </button>
+            </div>
+
+            {showGoalPicker && (
+              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.25)' }}>
+                {GOAL_PRESETS.map(p => (
+                  <div key={p.goal} onClick={() => setGoal(p.goal)} style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer',
+                    background: currentGoal === p.goal ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
+                    border: currentGoal === p.goal ? '1.5px solid white' : '1.5px solid transparent'
+                  }}>
+                    <span style={{ fontSize: '20px' }}>{p.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '12.5px', fontWeight: '700' }}>{p.title} {p.recommended && <span style={{ fontSize: '9.5px', fontWeight: '700', opacity: 0.85 }}>⭐ odporúčané</span>}</div>
+                      <div style={{ fontSize: '10.5px', opacity: 0.85 }}>{p.sub} — {p.desc}</div>
+                    </div>
+                  </div>
+                ))}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)' }}>
+                  <span style={{ fontSize: '20px' }}>⚙️</span>
+                  <div style={{ flex: 1, fontSize: '12.5px', fontWeight: '700' }}>Vlastné číslo</div>
+                  <select value={customGoal} onChange={e => setCustomGoal(parseInt(e.target.value))} style={{ borderRadius: '6px', border: 'none', padding: '5px 8px', fontSize: '12px' }}>
+                    {[1,2,3,4,5,6,7].map(n => <option key={n} value={n}>{n}×</option>)}
+                  </select>
+                  <button disabled={saving} onClick={() => setGoal(customGoal)} style={{ background: 'white', color: 'var(--green-dark)', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}>
+                    Nastaviť
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="card" style={{ padding: '16px', marginBottom: '14px' }}>
