@@ -94,3 +94,13 @@ input, select, textarea, button { font-family: 'DM Sans', sans-serif; font-size:
 .welcome-card .ring { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,0.14); display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 12px; }
 .welcome-card h3 { font-size: 21px; margin-bottom: 7px; letter-spacing: 0.5px; }
 .welcome-card p { font-size: 12.5px; opacity: 0.88; line-height: 1.55; max-width: 88%; }
+
+/* Streak & monthly progress cards */
+.streak-hero {
+  position: relative; overflow: hidden; border-radius: 18px; padding: 18px 20px;
+  background: linear-gradient(155deg, #FF7A45 0%, #E8590C 55%, #C2410C 100%);
+  color: white; box-shadow: 0 10px 26px rgba(232,89,12,0.32);
+}
+.streak-hero::after { content:''; position:absolute; right:-20px; bottom:-30px; width:130px; height:130px; border-radius:50%; background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%); }
+
+.month-card { border-radius: 16px; padding: 18px 20px; background: linear-gradient(160deg, #2A5F2D, #1D491F); color: white; box-shadow: 0 8px 20px rgba(29,73,31,0.28); }

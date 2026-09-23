@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { getAttendedDates, computeStreak, computeBadges } from '../lib/progress'
 
 const DAYS_SK = ['nedeľa','pondelok','utorok','streda','štvrtok','piatok','sobota']
 
@@ -38,12 +39,33 @@ export default function Calendar() {
       if (localStorage.getItem('bg_absence_shown') !== todayKey) {
         localStorage.setItem('bg_absence_shown', todayKey)
         setMotivationBanner('absence')
+        return
       }
     } else if (recentCount >= 3) {
       if (localStorage.getItem('bg_streak_shown') !== weekKey) {
         localStorage.setItem('bg_streak_shown', weekKey)
         setMotivationBanner('streak')
+        return
       }
+    }
+
+    // Nový odznak / osobný rekord — ukáže sa raz, keď sa dosiahnutá hodnota zvýši oproti naposledy zaznamenanej
+    const attendedDates = getAttendedDates(reservations)
+    const badges = computeBadges(attendedDates, profile?.created_at)
+    const streakInfo = computeStreak(attendedDates)
+    const earnedIds = badges.filter(b => b.earned).map(b => b.id)
+    const prevBadges = JSON.parse(localStorage.getItem('bg_badges_earned') || '[]')
+    const newBadge = badges.find(b => b.earned && !prevBadges.includes(b.id))
+    localStorage.setItem('bg_badges_earned', JSON.stringify(earnedIds))
+
+    const prevRecord = parseInt(localStorage.getItem('bg_streak_record') || '0', 10)
+    const newRecord = streakInfo.record > prevRecord && streakInfo.record > 0
+    if (streakInfo.record > prevRecord) localStorage.setItem('bg_streak_record', String(streakInfo.record))
+
+    if (newBadge) {
+      setMotivationBanner({ type: 'badge', icon: newBadge.icon, label: newBadge.label })
+    } else if (newRecord) {
+      setMotivationBanner({ type: 'record', weeks: streakInfo.record })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, credits, reservations])
@@ -196,6 +218,20 @@ export default function Calendar() {
           <div className="ring" style={{ width: '40px', height: '40px', fontSize: '19px', marginBottom: '8px' }}>👀</div>
           <h3 className="display" style={{ fontSize: '17px' }}>Chýbaš nám!</h3>
           <p>Už je to chvíľka, čo sme ťa v gyme nevideli.</p>
+        </div>
+      )}
+      {motivationBanner?.type === 'badge' && (
+        <div className="welcome-card" style={{ padding: '16px 18px', marginTop: '-4px', background: 'linear-gradient(160deg, #F4A81E, #C2790F)' }}>
+          <div className="ring" style={{ width: '40px', height: '40px', fontSize: '19px', marginBottom: '8px' }}>{motivationBanner.icon}</div>
+          <h3 className="display" style={{ fontSize: '17px' }}>Nový odznak!</h3>
+          <p>Získal/a si odznak "{motivationBanner.label}" 🎉</p>
+        </div>
+      )}
+      {motivationBanner?.type === 'record' && (
+        <div className="welcome-card" style={{ padding: '16px 18px', marginTop: '-4px', background: 'linear-gradient(160deg, #FF7A45, #C2410C)' }}>
+          <div className="ring" style={{ width: '40px', height: '40px', fontSize: '19px', marginBottom: '8px' }}>🏆</div>
+          <h3 className="display" style={{ fontSize: '17px' }}>Nový osobný rekord!</h3>
+          <p>{motivationBanner.weeks}-týždňová séria — tvoj doterajší najlepší výkon!</p>
         </div>
       )}
       {actionMsg.text && (
