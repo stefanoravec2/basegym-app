@@ -87,6 +87,8 @@ export function computeBadges(dates, createdAt) {
     { id: 'first_month', label: 'Prvý mesiac', icon: '🗓️', earned: daysSinceJoin >= 30 },
     { id: 'ten', label: '10 tréningov', icon: '🥉', earned: total >= 10 },
     { id: 'fifty', label: '50 tréningov', icon: '🥈', earned: total >= 50 },
+    { id: 'hundred', label: '100 tréningov', icon: '🥇', earned: total >= 100 },
+    { id: 'five_hundred', label: '500 tréningov', icon: '💎', earned: total >= 500 },
     { id: 'early_bird', label: 'Ranné vtáča', icon: '🌅', earned: morningCount >= 10 },
     { id: 'weekend_warrior', label: 'Víkendový bojovník', icon: '⚔️', earned: weekendCount >= 10 },
   ]
