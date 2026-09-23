@@ -13,10 +13,14 @@ const FEMALE_EMOJIS = ['🦄', '💄', '🐹', '🐒', '❤️', '🌺']
 const MALE_EMOJIS = ['🕵️‍♂️', '🏋🏻‍♂️', '🕺', '🥇', '🧸']
 
 // Jednoduchý odhad podľa krstného mena (slovenské ženské mená takmer vždy
-// končia na "a"). Nie je to 100% presné, ale na zábavné emoji v hlavičke stačí.
-function pickAvatarEmoji(uid, fullName) {
+// končia na "a"). Nie je to 100% presné, ale na zábavné emoji a jemné farby v hlavičke stačí.
+function isFemale(fullName) {
   const first = (fullName || '').trim().split(' ')[0].toLowerCase()
-  const list = first.endsWith('a') ? FEMALE_EMOJIS : MALE_EMOJIS
+  return first.endsWith('a')
+}
+
+function pickAvatarEmoji(uid, fullName) {
+  const list = isFemale(fullName) ? FEMALE_EMOJIS : MALE_EMOJIS
   let hash = 0
   for (let i = 0; i < (uid || '').length; i++) hash = (hash * 31 + uid.charCodeAt(i)) >>> 0
   return list[hash % list.length]
@@ -54,46 +58,49 @@ function AppInner() {
   ]
   if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner', icon: '🧑‍🏫' })
 
+  const menuBg = profile ? (isFemale(profile.full_name) ? '#FCE8EF' : 'var(--green-bg)') : 'var(--green-bg)'
+  const menuActiveText = profile ? (isFemale(profile.full_name) ? '#9D174D' : 'var(--green-dark)') : 'var(--green-dark)'
+  const menuActiveBg = profile ? (isFemale(profile.full_name) ? '#F8D0DF' : 'white') : 'white'
+
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <div style={{ background: 'white', borderBottom: '1px solid var(--border)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '56px', gap: '10px' }}>
-          <img src="/logo.png" alt="BaseGym BB" style={{ width: '32px', height: '32px', objectFit: 'contain', flexShrink: 0, borderRadius: '8px' }} />
-          <span className="display" style={{ fontSize: '18px', color: 'var(--green-dark)', flex: 1 }}>BaseGym BB</span>
+        <div style={{ maxWidth: '680px', margin: '0 auto', padding: '0 16px', display: 'flex', alignItems: 'center', height: '52px', gap: '9px' }}>
+          <img src="/logo.png" alt="BaseGym BB" style={{ width: '30px', height: '30px', objectFit: 'contain', flexShrink: 0, borderRadius: '7px' }} />
+          <span className="display" style={{ fontSize: '17px', color: 'var(--green-dark)', flex: 1 }}>BaseGym BB</span>
           {profile && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)' }}>{pickAvatarEmoji(user?.uid, profile.full_name)} {profile.nickname || profile.full_name?.split(' ')[0]}</span>
+              <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>{pickAvatarEmoji(user?.uid, profile.full_name)} {profile.nickname || profile.full_name?.split(' ')[0]}</span>
               {membership && (
-                <span style={{ background: 'var(--green-bg)', color: 'var(--green-dark)', fontSize: '11px', fontWeight: '700', padding: '3px 9px', borderRadius: '999px' }}>
+                <span style={{ background: 'var(--green-bg)', color: 'var(--green-dark)', fontSize: '10.5px', fontWeight: '700', padding: '2px 8px', borderRadius: '999px' }}>
                   {MEMBERSHIP_LABEL[membership] || membership}
                 </span>
               )}
             </span>
           )}
         </div>
+        <div style={{ background: menuBg, borderTop: '1px solid var(--border)' }}>
+          <div style={{ maxWidth: '680px', margin: '0 auto', padding: '6px 16px', display: 'flex', gap: '4px' }}>
+            {tabs.map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)} style={{
+                padding: '6px 13px', borderRadius: '999px', border: 'none', cursor: 'pointer',
+                background: tab === t.id ? menuActiveBg : 'transparent',
+                color: tab === t.id ? menuActiveText : 'var(--text-muted)',
+                fontWeight: tab === t.id ? '700' : '500', fontSize: '12.5px',
+                boxShadow: tab === t.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+                display: 'flex', alignItems: 'center', gap: '5px'
+              }}>
+                <span style={{ fontSize: '14px' }}>{t.icon}</span>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '20px 20px 90px', width: '100%', flex: 1 }}>
+      <div style={{ maxWidth: '680px', margin: '0 auto', padding: '20px 20px 40px' }}>
         {tab === 'calendar' && <Calendar />}
         {tab === 'profile' && <Profile />}
         {tab === 'trainer' && isTrainer && <TrainerPanel />}
-      </div>
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0, background: 'white', borderTop: '1px solid var(--border)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)', zIndex: 100
-      }}>
-        <div style={{ maxWidth: '680px', margin: '0 auto', display: 'flex', padding: '8px 0' }}>
-          {tabs.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{
-              flex: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-              color: tab === t.id ? 'var(--green-dark)' : 'var(--text-hint)',
-              fontWeight: tab === t.id ? '700' : '400', fontSize: '10.5px'
-            }}>
-              <span style={{ fontSize: '19px' }}>{t.icon}</span>
-              {t.label}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   )
