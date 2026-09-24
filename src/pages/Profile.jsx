@@ -50,9 +50,17 @@ export default function Profile() {
   async function setGoal(goal) {
     setSaving(true)
     const today = new Date().toISOString().split('T')[0]
-    await supabase.from('client_goal_history')
-      .upsert({ client_firebase_uid: user.uid, goal, effective_from: today }, { onConflict: 'client_firebase_uid,effective_from' })
-    await loadData()
+    // Najprv skús update, ak neexistuje, insert
+    const { data: existing } = await supabase.from('client_goal_history')
+      .select('id').eq('client_firebase_uid', user.uid).eq('effective_from', today).limit(1).maybeSingle()
+    if (existing) {
+      await supabase.from('client_goal_history').update({ goal }).eq('id', existing.id)
+    } else {
+      await supabase.from('client_goal_history').insert({ client_firebase_uid: user.uid, goal, effective_from: today })
+    }
+    // Znova načítaj všetko
+    const { data: gh } = await supabase.from('client_goal_history').select('*').eq('client_firebase_uid', user.uid).order('effective_from', { ascending: true })
+    setGoalHistory(gh || [])
     setShowGoalPicker(false)
     setSaving(false)
   }
