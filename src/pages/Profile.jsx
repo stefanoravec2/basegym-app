@@ -48,9 +48,12 @@ export default function Profile() {
   }
 
   async function setGoal(goal) {
-    setSaving(true)
+    // Okamžitá zmena v UI cez lokálny stav
     const today = new Date().toISOString().split('T')[0]
-    // Najprv skús update, ak neexistuje, insert
+    const newHistory = [...goalHistory.filter(h => h.effective_from !== today), { client_firebase_uid: user.uid, goal, effective_from: today }]
+    setGoalHistory(newHistory)
+    setShowGoalPicker(false)
+    // Sync do DB na pozadí
     const { data: existing } = await supabase.from('client_goal_history')
       .select('id').eq('client_firebase_uid', user.uid).eq('effective_from', today).limit(1).maybeSingle()
     if (existing) {
@@ -58,11 +61,6 @@ export default function Profile() {
     } else {
       await supabase.from('client_goal_history').insert({ client_firebase_uid: user.uid, goal, effective_from: today })
     }
-    // Znova načítaj všetko
-    const { data: gh } = await supabase.from('client_goal_history').select('*').eq('client_firebase_uid', user.uid).order('effective_from', { ascending: true })
-    setGoalHistory(gh || [])
-    setShowGoalPicker(false)
-    setSaving(false)
   }
 
   const activeCredit = credits.find(c => c.is_active && new Date(c.starts_at) <= new Date() && new Date(c.expires_at) >= new Date())
@@ -154,41 +152,22 @@ export default function Profile() {
             </div>
             <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.25)', fontSize: '11.5px', opacity: 0.9, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span>Osobný rekord: <b style={{ fontFamily: 'DM Mono, monospace', fontWeight: '700' }}>{streak.record} {streak.record === 1 ? 'týždeň' : 'týždňov'}</b> 🏆</span>
-              <button onClick={() => setShowGoalPicker(v => !v)} style={{ background: 'rgba(255,255,255,0.22)', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '20px', padding: '9px 14px', color: 'white', fontSize: '12px', fontWeight: '700', cursor: 'pointer', position: 'relative', zIndex: 2, minHeight: '36px' }}>
-                Zmeniť cieľ: {currentGoal}× ✎
-              </button>
             </div>
-          </div>
-
-          {showGoalPicker && (
-            <div className="card" style={{ padding: '16px', marginBottom: '14px', background: 'var(--green-dark)', color: 'white', border: 'none' }}>
-              <div style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '12px', opacity: 0.8 }}>Nastav si cieľ</div>
-              {GOAL_PRESETS.map(p => (
-                <button key={p.goal} onClick={() => setGoal(p.goal)} style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', padding: '14px', borderRadius: '12px', marginBottom: '8px', cursor: 'pointer', width: '100%', textAlign: 'left',
-                  background: currentGoal === p.goal ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
-                  border: currentGoal === p.goal ? '2px solid white' : '2px solid transparent', color: 'white',
-                  fontFamily: 'Poppins, sans-serif', fontSize: '13px'
-                }}>
-                  <span style={{ fontSize: '22px' }}>{p.icon}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: '700' }}>{p.title} {p.recommended && <span style={{ fontSize: '10px', opacity: 0.85 }}>⭐ odporúčané</span>}</div>
-                    <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '2px' }}>{p.sub} — {p.desc}</div>
-                  </div>
-                </button>
-              ))}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.08)', marginTop: '4px' }}>
-                <span style={{ fontSize: '22px' }}>⚙️</span>
-                <div style={{ flex: 1, fontSize: '13px', fontWeight: '700' }}>Vlastné číslo</div>
-                <select value={customGoal} onChange={e => setCustomGoal(parseInt(e.target.value))} style={{ borderRadius: '8px', border: 'none', padding: '8px 10px', fontSize: '13px' }}>
-                  {[1,2,3,4,5,6,7].map(n => <option key={n} value={n}>{n}×</option>)}
-                </select>
-                <button disabled={saving} onClick={() => setGoal(customGoal)} style={{ background: 'white', color: 'var(--green-dark)', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
-                  Nastaviť
-                </button>
+            <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.25)' }}>
+              <div style={{ fontSize: '11px', opacity: 0.8, marginBottom: '8px' }}>Môj týždenný cieľ:</div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                {[1,2,3,4,5,6,7].map(n => (
+                  <button key={n} onClick={() => setGoal(n)} style={{
+                    flex: 1, padding: '10px 0', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                    fontFamily: 'Poppins, sans-serif', fontSize: '15px', fontWeight: '700',
+                    background: currentGoal === n ? 'white' : 'rgba(255,255,255,0.12)',
+                    color: currentGoal === n ? 'var(--green-dark)' : 'white',
+                    boxShadow: currentGoal === n ? '0 2px 8px rgba(0,0,0,0.15)' : 'none'
+                  }}>{n}×</button>
+                ))}
               </div>
             </div>
-          )}
+          </div>
 
           <div className="card" style={{ padding: '16px', marginBottom: '14px' }}>
             <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
