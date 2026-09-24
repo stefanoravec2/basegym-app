@@ -155,35 +155,37 @@ export default function Profile() {
                 Zmeniť cieľ: {currentGoal}× ✎
               </button>
             </div>
-
-            {showGoalPicker && (
-              <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.25)', position: 'relative', zIndex: 2 }}>
-                {GOAL_PRESETS.map(p => (
-                  <button key={p.goal} onClick={() => setGoal(p.goal)} style={{
-                    display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', borderRadius: '10px', marginBottom: '6px', cursor: 'pointer', width: '100%', textAlign: 'left',
-                    background: currentGoal === p.goal ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
-                    border: currentGoal === p.goal ? '1.5px solid white' : '1.5px solid transparent', color: 'white'
-                  }}>
-                    <span style={{ fontSize: '20px' }}>{p.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '12.5px', fontWeight: '700' }}>{p.title} {p.recommended && <span style={{ fontSize: '9.5px', fontWeight: '700', opacity: 0.85 }}>⭐ odporúčané</span>}</div>
-                      <div style={{ fontSize: '10.5px', opacity: 0.85 }}>{p.sub} — {p.desc}</div>
-                    </div>
-                  </button>
-                ))}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px', borderRadius: '10px', background: 'rgba(255,255,255,0.08)' }}>
-                  <span style={{ fontSize: '20px' }}>⚙️</span>
-                  <div style={{ flex: 1, fontSize: '12.5px', fontWeight: '700' }}>Vlastné číslo</div>
-                  <select value={customGoal} onChange={e => setCustomGoal(parseInt(e.target.value))} style={{ borderRadius: '6px', border: 'none', padding: '5px 8px', fontSize: '12px' }}>
-                    {[1,2,3,4,5,6,7].map(n => <option key={n} value={n}>{n}×</option>)}
-                  </select>
-                  <button disabled={saving} onClick={() => setGoal(customGoal)} style={{ background: 'white', color: 'var(--green-dark)', border: 'none', borderRadius: '6px', padding: '6px 12px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}>
-                    Nastaviť
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
+
+          {showGoalPicker && (
+            <div className="card" style={{ padding: '16px', marginBottom: '14px', background: 'var(--green-dark)', color: 'white', border: 'none' }}>
+              <div style={{ fontSize: '12px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '12px', opacity: 0.8 }}>Nastav si cieľ</div>
+              {GOAL_PRESETS.map(p => (
+                <button key={p.goal} onClick={() => setGoal(p.goal)} style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '14px', borderRadius: '12px', marginBottom: '8px', cursor: 'pointer', width: '100%', textAlign: 'left',
+                  background: currentGoal === p.goal ? 'rgba(255,255,255,0.22)' : 'rgba(255,255,255,0.08)',
+                  border: currentGoal === p.goal ? '2px solid white' : '2px solid transparent', color: 'white',
+                  fontFamily: 'Poppins, sans-serif', fontSize: '13px'
+                }}>
+                  <span style={{ fontSize: '22px' }}>{p.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '700' }}>{p.title} {p.recommended && <span style={{ fontSize: '10px', opacity: 0.85 }}>⭐ odporúčané</span>}</div>
+                    <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '2px' }}>{p.sub} — {p.desc}</div>
+                  </div>
+                </button>
+              ))}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '14px', borderRadius: '12px', background: 'rgba(255,255,255,0.08)', marginTop: '4px' }}>
+                <span style={{ fontSize: '22px' }}>⚙️</span>
+                <div style={{ flex: 1, fontSize: '13px', fontWeight: '700' }}>Vlastné číslo</div>
+                <select value={customGoal} onChange={e => setCustomGoal(parseInt(e.target.value))} style={{ borderRadius: '8px', border: 'none', padding: '8px 10px', fontSize: '13px' }}>
+                  {[1,2,3,4,5,6,7].map(n => <option key={n} value={n}>{n}×</option>)}
+                </select>
+                <button disabled={saving} onClick={() => setGoal(customGoal)} style={{ background: 'white', color: 'var(--green-dark)', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}>
+                  Nastaviť
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="card" style={{ padding: '16px', marginBottom: '14px' }}>
             <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
