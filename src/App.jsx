@@ -59,11 +59,11 @@ function AppInner() {
   if (!user) return <Auth />
 
   const tabs = [
-    { id: 'calendar', label: 'Rezervácie', icon: '📅' },
-    { id: 'profile', label: 'Môj profil', icon: '👤' },
-    { id: 'info', label: 'Informácie', icon: 'ℹ️' },
+    { id: 'calendar', label: 'Rezervácie' },
+    { id: 'profile', label: 'Môj profil' },
+    { id: 'info', label: 'Informácie' },
   ]
-  if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner', icon: '🧑‍🏫' })
+  if (isTrainer) tabs.push({ id: 'trainer', label: 'Tréner' })
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--page-bg)' }}>
@@ -93,7 +93,6 @@ function AppInner() {
                 boxShadow: tab === t.id ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
                 display: 'flex', alignItems: 'center', gap: '5px'
               }}>
-                <span style={{ fontSize: '14px' }}>{t.icon}</span>
                 {t.label}
               </button>
             ))}
