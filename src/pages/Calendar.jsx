@@ -267,6 +267,30 @@ export default function Calendar() {
         </div>
       ) : (
         <div>
+          {(() => {
+            const upcoming = trainings
+              .filter(t => isReserved(t.id) && new Date(t.starts_at) > new Date())
+              .sort((a, b) => new Date(a.starts_at) - new Date(b.starts_at))
+            if (upcoming.length === 0) return null
+            return (
+              <div style={{ background: 'var(--green-bg)', borderRadius: '14px', padding: '14px 18px', marginBottom: '20px', border: '1px solid var(--green)' }}>
+                <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--green-dark)', marginBottom: '8px' }}>Tvoje najbližšie tréningy</div>
+                {upcoming.map(t => {
+                  const d = new Date(t.starts_at)
+                  return (
+                    <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0', borderTop: t === upcoming[0] ? 'none' : '1px solid rgba(0,0,0,0.06)' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--green-dark)', minWidth: '80px' }}>
+                        {d.toLocaleDateString('sk-SK', { weekday: 'short', day: 'numeric', month: 'numeric' })}
+                      </div>
+                      <div style={{ fontFamily: 'DM Mono, monospace', fontSize: '14px', fontWeight: '700' }}>{formatTime(t.starts_at)}</div>
+                      <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', flex: 1 }}>{t.title}</div>
+                      <span style={{ fontSize: '11px', color: 'var(--green-dark)', fontWeight: '600' }}>✓</span>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()}
           {Object.entries(byDay).slice(0, visibleDays).map(([dateStr, dayTrainings]) => {
             const day = new Date(dateStr)
             const isToday = day.toDateString() === new Date().toDateString()
