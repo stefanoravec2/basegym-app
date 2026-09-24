@@ -50,13 +50,8 @@ export default function Profile() {
   async function setGoal(goal) {
     setSaving(true)
     const today = new Date().toISOString().split('T')[0]
-    // ak sa cieľ mení opakovane v ten istý deň, len ho prepíšeme namiesto hromadenia záznamov
-    const todays = goalHistory.find(h => h.effective_from === today)
-    if (todays) {
-      await supabase.from('client_goal_history').update({ goal }).eq('id', todays.id)
-    } else {
-      await supabase.from('client_goal_history').insert({ client_firebase_uid: user.uid, goal, effective_from: today })
-    }
+    await supabase.from('client_goal_history')
+      .upsert({ client_firebase_uid: user.uid, goal, effective_from: today }, { onConflict: 'client_firebase_uid,effective_from' })
     await loadData()
     setShowGoalPicker(false)
     setSaving(false)
