@@ -73,7 +73,7 @@ function AppInner() {
           <span className="display" style={{ fontSize: '17px', color: 'var(--name-color)', flex: 1 }}>BaseGym BB</span>
           {profile && (
             <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>{pickAvatarEmoji(user?.uid, profile.full_name)} {profile.nickname || profile.full_name?.split(' ')[0]}</span>
+              <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)' }}>{profile.nickname || profile.full_name?.split(' ')[0]}</span>
               {membership && (
                 <span style={{ background: 'var(--badge-bg)', color: 'var(--badge-text)', fontSize: '10.5px', fontWeight: '700', padding: '2px 8px', borderRadius: '999px' }}>
                   {MEMBERSHIP_LABEL[membership] || membership}
