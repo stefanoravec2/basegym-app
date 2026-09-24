@@ -74,7 +74,9 @@ export function computeStreak(dates, goalHistory) {
 export function currentWeekProgress(dates, goalHistory) {
   const nowMonday = mondayOf(new Date())
   const count = dates.filter(d => mondayOf(d).getTime() === nowMonday.getTime()).length
-  const goal = goalAt(goalHistory, nowMonday)
+  // Cieľ pre aktuálny týždeň sa berie podľa DNEŠNÉHO dátumu, nie pondelka —
+  // ak si klient zmení cieľ v strede týždňa, má ho vidieť hneď.
+  const goal = goalAt(goalHistory, new Date())
   return { count, goal, met: count >= goal }
 }
 
