@@ -364,7 +364,7 @@ export default function Calendar() {
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid var(--border)', flexWrap: 'wrap', gap: '10px' }}>
                             <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                              <span className="badge badge-amber">{t.credits_cost || 1} kredit</span>
+                              <span className="badge badge-amber" style={{ display: 'none' }}>{t.credits_cost || 1} kredit</span>
                               <button onClick={() => setExpanded(isExp ? null : t.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', color: 'var(--text-muted)', textDecoration: 'underline' }}>
                                 prihlásení {isExp ? '▲' : '▼'}
                               </button>
