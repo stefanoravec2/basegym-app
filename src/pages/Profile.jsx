@@ -29,6 +29,7 @@ export default function Profile() {
   const [msg, setMsg] = useState('')
   const [pwMsg, setPwMsg] = useState('')
   const [pwSaving, setPwSaving] = useState(false)
+  const [showPwForm, setShowPwForm] = useState(false)
   const [currentPw, setCurrentPw] = useState('')
   const [newPw, setNewPw] = useState('')
   const [newPw2, setNewPw2] = useState('')
@@ -116,63 +117,75 @@ export default function Profile() {
       {msg && <div className="info-box info-green" style={{ marginBottom: '16px' }}>{msg}</div>}
 
       <div className="card" style={{ padding: '16px', marginBottom: '20px' }}>
-        <div style={{ fontSize: '14px', fontWeight: '600', marginBottom: '10px' }}>Zmeniť heslo</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <input
-            className="input"
-            type="password"
-            placeholder="Súčasné heslo"
-            value={currentPw}
-            onChange={e => setCurrentPw(e.target.value)}
-            autoComplete="current-password"
-          />
-          <input
-            className="input"
-            type="password"
-            placeholder="Nové heslo"
-            value={newPw}
-            onChange={e => setNewPw(e.target.value)}
-            autoComplete="new-password"
-          />
-          <input
-            className="input"
-            type="password"
-            placeholder="Nové heslo znova"
-            value={newPw2}
-            onChange={e => setNewPw2(e.target.value)}
-            autoComplete="new-password"
-          />
-          <button
-            className="btn btn-green"
-            disabled={pwSaving}
-            style={{ fontSize: '13px', fontWeight: '600', padding: '10px' }}
-            onClick={async () => {
-              setPwMsg('')
-              if (!currentPw || !newPw || !newPw2) { setPwMsg('Vyplň všetky polia.'); return }
-              if (newPw.length < 6) { setPwMsg('Nové heslo musí mať aspoň 6 znakov.'); return }
-              if (newPw !== newPw2) { setPwMsg('Nové heslá sa nezhodujú.'); return }
-              setPwSaving(true)
-              try {
-                await changePassword(currentPw, newPw)
-                setPwMsg('✓ Heslo bolo zmenené.')
-                setCurrentPw(''); setNewPw(''); setNewPw2('')
-              } catch (e) {
-                if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
-                  setPwMsg('Súčasné heslo nie je správne.')
-                } else if (e.code === 'auth/weak-password') {
-                  setPwMsg('Nové heslo je príliš slabé.')
-                } else {
-                  setPwMsg('Nepodarilo sa zmeniť heslo. Skús to znova.')
+        <button
+          onClick={() => { setShowPwForm(v => !v); setPwMsg('') }}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 0, width: '100%',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+          }}
+        >
+          <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Zmeniť heslo</span>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)', transition: 'transform 0.2s', transform: showPwForm ? 'rotate(180deg)' : 'rotate(0deg)' }}>▼</span>
+        </button>
+        {showPwForm && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border)' }}>
+            <input
+              className="input"
+              type="password"
+              placeholder="Súčasné heslo"
+              value={currentPw}
+              onChange={e => setCurrentPw(e.target.value)}
+              autoComplete="current-password"
+            />
+            <input
+              className="input"
+              type="password"
+              placeholder="Nové heslo"
+              value={newPw}
+              onChange={e => setNewPw(e.target.value)}
+              autoComplete="new-password"
+            />
+            <input
+              className="input"
+              type="password"
+              placeholder="Nové heslo znova"
+              value={newPw2}
+              onChange={e => setNewPw2(e.target.value)}
+              autoComplete="new-password"
+            />
+            {pwMsg && <div className={`info-box ${pwMsg.startsWith('✓') ? 'info-green' : 'info-red'}`}>{pwMsg}</div>}
+            <button
+              className="btn btn-green"
+              disabled={pwSaving}
+              style={{ fontSize: '13px', fontWeight: '600', padding: '10px' }}
+              onClick={async () => {
+                setPwMsg('')
+                if (!currentPw || !newPw || !newPw2) { setPwMsg('Vyplň všetky polia.'); return }
+                if (newPw.length < 6) { setPwMsg('Nové heslo musí mať aspoň 6 znakov.'); return }
+                if (newPw !== newPw2) { setPwMsg('Nové heslá sa nezhodujú.'); return }
+                setPwSaving(true)
+                try {
+                  await changePassword(currentPw, newPw)
+                  setPwMsg('✓ Heslo bolo zmenené.')
+                  setCurrentPw(''); setNewPw(''); setNewPw2('')
+                  setTimeout(() => { setShowPwForm(false); setPwMsg('') }, 2000)
+                } catch (e) {
+                  if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
+                    setPwMsg('Súčasné heslo nie je správne.')
+                  } else if (e.code === 'auth/weak-password') {
+                    setPwMsg('Nové heslo je príliš slabé.')
+                  } else {
+                    setPwMsg('Nepodarilo sa zmeniť heslo. Skús to znova.')
+                  }
                 }
-              }
-              setPwSaving(false)
-            }}
-          >
-            {pwSaving ? 'Ukladám...' : 'Zmeniť heslo'}
-          </button>
-        </div>
+                setPwSaving(false)
+              }}
+            >
+              {pwSaving ? 'Ukladám...' : 'Zmeniť heslo'}
+            </button>
+          </div>
+        )}
       </div>
-      {pwMsg && <div className={`info-box ${pwMsg.startsWith('✓') ? 'info-green' : 'info-red'}`} style={{ marginBottom: '16px', marginTop: '-12px' }}>{pwMsg}</div>}
 
       {loading ? <p style={{ color: 'var(--text-muted)' }}>Načítavam...</p> : (
         <>
