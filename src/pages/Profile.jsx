@@ -10,7 +10,7 @@ const GOAL_PRESETS = [
 ]
 
 export default function Profile() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, resetPassword } = useAuth()
   const [credits, setCredits] = useState([])
   const [logs, setLogs] = useState([])
   const [reservations, setReservations] = useState([])
@@ -27,6 +27,8 @@ export default function Profile() {
   const [phone, setPhone] = useState('')
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
+  const [pwMsg, setPwMsg] = useState('')
+  const [pwSending, setPwSending] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -109,6 +111,32 @@ export default function Profile() {
       )}
 
       {msg && <div className="info-box info-green" style={{ marginBottom: '16px' }}>{msg}</div>}
+
+      <div className="card" style={{ padding: '16px', marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: '14px', fontWeight: '600' }}>Zmeniť heslo</div>
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Pošleme ti email s odkazom na zmenu hesla</div>
+        </div>
+        <button
+          className="btn"
+          disabled={pwSending}
+          style={{ fontSize: '13px', whiteSpace: 'nowrap' }}
+          onClick={async () => {
+            setPwSending(true)
+            setPwMsg('')
+            try {
+              await resetPassword(user.email)
+              setPwMsg('✓ Email odoslaný! Skontroluj si schránku.')
+            } catch (e) {
+              setPwMsg('Nepodarilo sa odoslať email. Skús to znova.')
+            }
+            setPwSending(false)
+          }}
+        >
+          {pwSending ? 'Odosielam...' : 'Poslať email'}
+        </button>
+      </div>
+      {pwMsg && <div className={`info-box ${pwMsg.startsWith('✓') ? 'info-green' : 'info-red'}`} style={{ marginBottom: '16px', marginTop: '-12px' }}>{pwMsg}</div>}
 
       {loading ? <p style={{ color: 'var(--text-muted)' }}>Načítavam...</p> : (
         <>
