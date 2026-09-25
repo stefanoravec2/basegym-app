@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 
 export default function Auth() {
-  const { signIn, signUp } = useAuth()
+  const { signIn, signUp, resetPassword } = useAuth()
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -12,6 +12,27 @@ export default function Auth() {
   const [error, setError] = useState('')
   const [showPass, setShowPass] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [resetMode, setResetMode] = useState(false)
+  const [resetMsg, setResetMsg] = useState('')
+
+  async function handleReset(e) {
+    e.preventDefault()
+    setError('')
+    setResetMsg('')
+    if (!email.trim()) { setError('Zadaj email.'); return }
+    setLoading(true)
+    try {
+      await resetPassword(email)
+      setResetMsg('Odkaz na obnovu hesla bol odoslaný na tvoj email.')
+    } catch (err) {
+      const msgs = {
+        'auth/user-not-found': 'Účet s týmto emailom neexistuje.',
+        'auth/invalid-email': 'Neplatný email.',
+      }
+      setError(msgs[err.code] || 'Nepodarilo sa odoslať. Skús znova.')
+    }
+    setLoading(false)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -48,37 +69,64 @@ export default function Auth() {
           <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Rezervačný systém</p>
         </div>
         <div style={{ background: 'white', borderRadius: '16px', border: '1px solid var(--border)', padding: '24px' }}>
-          <div style={{ display: 'flex', marginBottom: '20px', background: 'var(--bg)', borderRadius: '10px', padding: '3px', gap: '3px' }}>
-            {['login', 'register'].map(m => (
-              <button key={m} onClick={() => { setMode(m); setError('') }} style={{
-                flex: 1, padding: '7px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                background: mode === m ? 'white' : 'transparent',
-                color: mode === m ? 'var(--green-dark)' : 'var(--text-muted)',
-                fontWeight: mode === m ? '600' : '400', fontSize: '13px',
-                boxShadow: mode === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-              }}>{m === 'login' ? 'Prihlásenie' : 'Registrácia'}</button>
-            ))}
-          </div>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {mode === 'register' && (
-              <>
-                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Celé meno *</label><input className="input" type="text" placeholder="Ján Novák" value={fullName} onChange={e => setFullName(e.target.value)} required /></div>
-                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Prezývka (viditeľná v rezerváciách) *</label><input className="input" type="text" placeholder="@jano88" value={nickname} onChange={e => setNickname(e.target.value.replace('@', ''))} required /></div>
-                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Telefón</label><input className="input" type="tel" placeholder="+421 900 000 000" value={phone} onChange={e => setPhone(e.target.value)} /></div>
-              </>
-            )}
-            <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Email *</label><input className="input" type="email" placeholder="jan@email.sk" value={email} onChange={e => setEmail(e.target.value)} required /></div>
-            <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Heslo *</label>
-              <div style={{ position: 'relative' }}>
-                <input className="input" type={showPass ? 'text' : 'password'} placeholder="min. 6 znakov" value={password} onChange={e => setPassword(e.target.value)} required style={{ paddingRight: '44px' }} />
-                <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>{showPass ? '🙈' : '👁'}</button>
+          {resetMode ? (
+            <>
+              <div style={{ marginBottom: '16px' }}>
+                <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text)', marginBottom: '4px' }}>Obnova hesla</h2>
+                <p style={{ fontSize: '12.5px', color: 'var(--text-muted)' }}>Zadaj svoj email a pošleme ti odkaz na nastavenie nového hesla.</p>
               </div>
-            </div>
-            {error && <div className="info-box info-red">{error}</div>}
-            <button type="submit" disabled={loading} style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: '600', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '4px' }}>
-              {loading ? 'Moment...' : mode === 'login' ? 'Prihlásiť sa' : 'Vytvoriť účet'}
-            </button>
-          </form>
+              <form onSubmit={handleReset} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Email *</label><input className="input" type="email" placeholder="jan@email.sk" value={email} onChange={e => setEmail(e.target.value)} required /></div>
+                {error && <div className="info-box info-red">{error}</div>}
+                {resetMsg && <div className="info-box info-green">{resetMsg}</div>}
+                <button type="submit" disabled={loading} style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: '600', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '4px' }}>
+                  {loading ? 'Odosielam...' : 'Odoslať odkaz'}
+                </button>
+              </form>
+              <button onClick={() => { setResetMode(false); setError(''); setResetMsg('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--green-dark)', fontSize: '13px', fontWeight: '500', marginTop: '14px', padding: 0 }}>
+                ← Späť na prihlásenie
+              </button>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'flex', marginBottom: '20px', background: 'var(--bg)', borderRadius: '10px', padding: '3px', gap: '3px' }}>
+                {['login', 'register'].map(m => (
+                  <button key={m} onClick={() => { setMode(m); setError('') }} style={{
+                    flex: 1, padding: '7px', borderRadius: '8px', border: 'none', cursor: 'pointer',
+                    background: mode === m ? 'white' : 'transparent',
+                    color: mode === m ? 'var(--green-dark)' : 'var(--text-muted)',
+                    fontWeight: mode === m ? '600' : '400', fontSize: '13px',
+                    boxShadow: mode === m ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+                  }}>{m === 'login' ? 'Prihlásenie' : 'Registrácia'}</button>
+                ))}
+              </div>
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {mode === 'register' && (
+                  <>
+                    <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Celé meno *</label><input className="input" type="text" placeholder="Ján Novák" value={fullName} onChange={e => setFullName(e.target.value)} required /></div>
+                    <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Prezývka (viditeľná v rezerváciách) *</label><input className="input" type="text" placeholder="@jano88" value={nickname} onChange={e => setNickname(e.target.value.replace('@', ''))} required /></div>
+                    <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Telefón</label><input className="input" type="tel" placeholder="+421 900 000 000" value={phone} onChange={e => setPhone(e.target.value)} /></div>
+                  </>
+                )}
+                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Email *</label><input className="input" type="email" placeholder="jan@email.sk" value={email} onChange={e => setEmail(e.target.value)} required /></div>
+                <div><label style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', display: 'block' }}>Heslo *</label>
+                  <div style={{ position: 'relative' }}>
+                    <input className="input" type={showPass ? 'text' : 'password'} placeholder="min. 6 znakov" value={password} onChange={e => setPassword(e.target.value)} required style={{ paddingRight: '44px' }} />
+                    <button type="button" onClick={() => setShowPass(v => !v)} style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '4px' }}>{showPass ? '🙈' : '👁'}</button>
+                  </div>
+                </div>
+                {mode === 'login' && (
+                  <button type="button" onClick={() => { setResetMode(true); setError('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--green-dark)', fontSize: '12.5px', fontWeight: '500', padding: 0, textAlign: 'left' }}>
+                    Zabudol si heslo?
+                  </button>
+                )}
+                {error && <div className="info-box info-red">{error}</div>}
+                <button type="submit" disabled={loading} style={{ background: 'var(--green)', color: 'white', border: 'none', borderRadius: '10px', padding: '12px', fontWeight: '600', fontSize: '14px', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: '4px' }}>
+                  {loading ? 'Moment...' : mode === 'login' ? 'Prihlásiť sa' : 'Vytvoriť účet'}
+                </button>
+              </form>
+            </>
+          )}
         </div>
         <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', marginTop: '16px' }}>Nemáš účet? Zaregistruj sa a potom kontaktuj trénera pre aktiváciu kreditov.</p>
       </div>
