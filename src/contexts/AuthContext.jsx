@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, updateProfile, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as firebaseSignOut, onAuthStateChanged, updateProfile, EmailAuthProvider, reauthenticateWithCredential, updatePassword, sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 import { supabase } from '../lib/supabase'
 
@@ -89,8 +89,12 @@ export function AuthProvider({ children }) {
     await updatePassword(auth.currentUser, newPassword)
   }
 
+  async function resetPassword(email) {
+    await sendPasswordResetEmail(auth, email)
+  }
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, isTrainer, signIn, signUp, signOut, changePassword }}>
+    <AuthContext.Provider value={{ user, profile, loading, isTrainer, signIn, signUp, signOut, changePassword, resetPassword }}>
       {children}
     </AuthContext.Provider>
   )
