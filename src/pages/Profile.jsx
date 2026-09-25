@@ -345,27 +345,5 @@ export default function Profile() {
               </button>
             )}
           </div>
-
-          <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-hint)', margin: '20px 2px 9px' }}>Informácie</div>
-          <div className="card" style={{ padding: '18px 20px', marginBottom: '14px' }}>
-            <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>Cenník permanentiek</h4>
-            <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-              Gold (neobmedzené) — 59 €/mesiac<br/>
-              Silver (12 kreditov) — 45 €/mesiac<br/>
-              Basic kurz (8 kreditov) — 35 €/mesiac<br/>
-              Jednorázový vstup — 6 €
-            </div>
-          </div>
-          <div className="card" style={{ padding: '18px 20px', marginBottom: '14px' }}>
-            <h4 style={{ fontSize: '14px', fontWeight: '700', marginBottom: '10px' }}>Pravidlá prihlasovania</h4>
-            <div style={{ fontSize: '12.5px', color: 'var(--text-muted)', lineHeight: 1.7 }}>
-              • Na tréning sa prihlás vopred cez appku<br/>
-              • 1 tréning = 1 kredit<br/>
-              • Odhlásiť sa je možné najneskôr 30 min pred začiatkom — inak kredit prepadáva<br/>
-              • Kapacita je obmedzená — ak je plno, sleduj voľné miesta
-            </div>
-          </div>        </>
-      )}
-    </div>
   )
 }
