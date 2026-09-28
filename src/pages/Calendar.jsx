@@ -339,7 +339,7 @@ export default function Calendar() {
                     const startMin = new Date(t.starts_at).getMinutes()
                     const is1840 = startHour === 18 && startMin === 40
                     const registrationClosed = is1840 && msUntilStart < 60 * 60 * 1000 && msUntilStart > 0
-                    const lowAttendance = is1840 && !past && msUntilStart < 60 * 60 * 1000 && activeCount < 2
+                    const lowAttendance = is1840 && !past && activeCount < 2
                     const isExp = expanded === t.id
                     return (
                       <div key={t.id} style={{
