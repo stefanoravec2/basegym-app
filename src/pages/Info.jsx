@@ -28,6 +28,7 @@ export default function Info() {
         <h3 style={{ fontSize: '15px', fontWeight: '700', marginBottom: '12px' }}>Pravidlá prihlasovania</h3>
         <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.8 }}>
           Na tréning sa prihlás vopred cez appku. Jeden tréning stojí 1 kredit.<br/><br/>
+          <b style={{ color: 'var(--text)' }}>Prihlasovanie sa uzatvára 1 hodinu pred začiatkom tréningu.</b> Ak je v tom čase prihlásených menej ako 2 ľudí, tréning sa automaticky zruší a kredity sa vrátia.<br/><br/>
           Odhlásiť sa je možné <b style={{ color: 'var(--text)' }}>najneskôr 30 minút</b> pred začiatkom tréningu — inak kredit prepadáva.<br/><br/>
           Kapacita je obmedzená. Ak je tréning plný, sleduj voľné miesta — keď sa niekto odhlási, miesto sa uvoľní.
         </div>

@@ -334,6 +334,9 @@ export default function Calendar() {
                     const activeCount = activeRes.length
                     const full = activeCount >= t.capacity
                     const past = new Date(t.starts_at) < new Date()
+                    const msUntilStart = new Date(t.starts_at) - new Date()
+                    const registrationClosed = msUntilStart < 60 * 60 * 1000 && msUntilStart > 0
+                    const lowAttendance = !past && msUntilStart < 60 * 60 * 1000 && activeCount < 2
                     const isExp = expanded === t.id
                     return (
                       <div key={t.id} style={{
@@ -375,13 +378,20 @@ export default function Calendar() {
                                 <div style={{ fontSize: '9.5px', color: 'var(--text-hint)', marginTop: '4px' }}>Najneskôr 30 min pred začiatkom</div>
                               </div>
                             ) : !past && (
-                              full ? (
+                              registrationClosed ? (
+                                <span style={{ fontSize: '12px', color: 'var(--text-hint)', fontWeight: '500' }}>Prihlasovanie uzavreté</span>
+                              ) : full ? (
                                 <button disabled style={{ background: '#F2F2EF', border: '1px solid var(--border-md)', color: 'var(--text-hint)', padding: '8px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'default' }}>Plné</button>
                               ) : (
                                 <button onClick={() => reserve(t)} className="btn btn-green" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Prihlásiť sa</button>
                               )
                             )}
                           </div>
+                          {lowAttendance && !reserved && (
+                            <div style={{ fontSize: '11px', color: '#B45309', background: '#FEF3C7', padding: '6px 12px', borderRadius: '8px', marginTop: '8px' }}>
+                              ⚠ Menej ako 2 prihlásení — tréning môže byť zrušený
+                            </div>
+                          )}
                           {isExp && (
                             <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                               {activeCount === 0 ? <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Nikto nie je prihlásený</span>
