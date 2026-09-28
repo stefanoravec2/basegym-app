@@ -335,8 +335,11 @@ export default function Calendar() {
                     const full = activeCount >= t.capacity
                     const past = new Date(t.starts_at) < new Date()
                     const msUntilStart = new Date(t.starts_at) - new Date()
-                    const registrationClosed = msUntilStart < 60 * 60 * 1000 && msUntilStart > 0
-                    const lowAttendance = !past && msUntilStart < 60 * 60 * 1000 && activeCount < 2
+                    const startHour = new Date(t.starts_at).getHours()
+                    const startMin = new Date(t.starts_at).getMinutes()
+                    const is1840 = startHour === 18 && startMin === 40
+                    const registrationClosed = is1840 && msUntilStart < 60 * 60 * 1000 && msUntilStart > 0
+                    const lowAttendance = is1840 && !past && msUntilStart < 60 * 60 * 1000 && activeCount < 2
                     const isExp = expanded === t.id
                     return (
                       <div key={t.id} style={{
