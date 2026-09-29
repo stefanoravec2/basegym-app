@@ -147,7 +147,14 @@ export default function Survey() {
 
     // Handle END
     if (next === 'END') {
-      await completeSession(session.respondentId, newSession.product, newSession.lab, startedAt.current)
+      newSession.currentScreen = 'END'
+      setSession(newSession)
+      saveSessionLocal(newSession)
+      setScreen('END')
+      setSubmitting(false)
+      // Complete in background
+      completeSession(session.respondentId, newSession.product, newSession.lab, startedAt.current)
+      return
     }
 
     newSession.currentScreen = next

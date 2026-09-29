@@ -4,13 +4,15 @@ const SESSION_KEY = 'hc_lab_session'
 const SESSION_TTL = 60 * 60 * 1000 // 60 min
 
 export async function initSession() {
-  // Resume if within TTL
+  // Resume if within TTL — ale nie ak je dokončená
   const stored = localStorage.getItem(SESSION_KEY)
   if (stored) {
     const { respondentId, timestamp, currentScreen, answers, product, lab } = JSON.parse(stored)
-    if (Date.now() - timestamp < SESSION_TTL && respondentId) {
+    if (Date.now() - timestamp < SESSION_TTL && respondentId && currentScreen !== 'END') {
       return { respondentId, currentScreen, answers: answers || {}, product, lab, resumed: true }
     }
+    // Dokončená alebo expirovaná — vymaž a začni novú
+    localStorage.removeItem(SESSION_KEY)
   }
 
   // Create new respondent
@@ -130,7 +132,8 @@ export async function completeSession(respondentId, product, lab, startedAt) {
 
   await incrementLabCount(product, lab)
   await logEvent(respondentId, 'survey_completed', { selected_product: product, assigned_lab: lab })
-  clearSession()
+  // Nevymažeme session hneď — nechajme END screen sa vykresliť
+  // clearSession() sa zavolá keď user opätovne načíta stránku
 }
 
 export async function saveEmailLead(respondentId, email) {
