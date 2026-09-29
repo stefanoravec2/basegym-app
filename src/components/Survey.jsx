@@ -210,8 +210,6 @@ export default function Survey() {
       </header>
 
       <main className="hc-screen">
-        <div className="hc-arch hc-arch--top" />
-
         {q.type === 'intro' ? (
           <IntroScreen q={q} onStart={() => {
             setScreen('S01')
@@ -384,7 +382,6 @@ function hasValue(q, answer, multiAnswer) {
 function IntroScreen({ q, onStart }) {
   return (
     <div className="hc-intro" style={{ paddingTop: 60 }}>
-      <div className="hc-arch hc-arch--top" />
       <div className="hc-intro-badge">hello coco · Customer Lab</div>
       <h1>{q.headline}</h1>
       <p>{q.body}</p>
@@ -413,8 +410,7 @@ function EndScreen({ session, email, setEmail, emailSent, setEmailSent }) {
         <div className="hc-progress"><span className="hc-progress__bar" style={{ width: '100%' }} /></div>
       </header>
       <main className="hc-screen">
-        <div className="hc-arch hc-arch--top" />
-        <div className="hc-card" style={{ marginTop: 40, textAlign: 'center' }}>
+          <div className="hc-card" style={{ marginTop: 40, textAlign: 'center' }}>
           <div className="hc-end-icon">🙌</div>
           <h1 className="hc-question">Děkujeme!</h1>
           <p className="hc-helper">
