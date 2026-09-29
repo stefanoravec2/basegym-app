@@ -194,7 +194,15 @@ export default function Survey() {
     </div>
   )
 
-  if (!q) return <div className="hc-app"><div style={{ padding: 40, textAlign: 'center', color: 'var(--hc-muted)' }}>Chyba načtení.</div></div>
+  if (!q) {
+    // Screen ID not found — reset to S00
+    setTimeout(() => setScreen('S00'), 100)
+    return (
+      <div className="hc-app" style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ color: 'var(--hc-muted)', fontSize: 16 }}>Načítáme…</div>
+      </div>
+    )
+  }
 
   if (screen === 'END') return <EndScreen session={session} email={email} setEmail={setEmail} emailSent={emailSent} setEmailSent={setEmailSent} />
 
