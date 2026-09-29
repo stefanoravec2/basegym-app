@@ -194,8 +194,9 @@ export default function Survey() {
     </div>
   )
 
+  if (screen === 'END') return <EndScreen session={session} email={email} setEmail={setEmail} emailSent={emailSent} setEmailSent={setEmailSent} />
+
   if (!q) {
-    // Screen ID not found — reset to S00
     setTimeout(() => setScreen('S00'), 100)
     return (
       <div className="hc-app" style={{ alignItems: 'center', justifyContent: 'center' }}>
@@ -203,8 +204,6 @@ export default function Survey() {
       </div>
     )
   }
-
-  if (screen === 'END') return <EndScreen session={session} email={email} setEmail={setEmail} emailSent={emailSent} setEmailSent={setEmailSent} />
 
   return (
     <div className="hc-app">
@@ -389,11 +388,14 @@ function hasValue(q, answer, multiAnswer) {
 
 function IntroScreen({ q, onStart }) {
   return (
-    <div className="hc-intro" style={{ paddingTop: 60 }}>
-      <div className="hc-intro-badge">hello coco · Customer Lab</div>
+    <div className="hc-intro">
+      <div className="hc-intro-arch">
+        <img src="/assets/hello-coco-logo.png" alt="hello coco" style={{ height: 44, width: 'auto' }} />
+      </div>
+      <div className="hc-intro-badge">Customer Lab · Praha 2026</div>
       <h1>{q.headline}</h1>
       <p>{q.body}</p>
-      <button className="hc-primary" style={{ maxWidth: 320 }} onClick={onStart}>
+      <button className="hc-primary" style={{ maxWidth: 360, alignSelf: 'stretch' }} onClick={onStart}>
         {q.cta}
       </button>
     </div>
