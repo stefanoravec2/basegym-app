@@ -97,22 +97,16 @@ export default function Survey() {
         shown_options_json: shownOrder ? JSON.stringify(shownOrder) : null
       }
 
-      if (q.type === 'multi') {
-        const selected = multiAnswer
-        meta.shown_options_json = JSON.stringify(shownOrder)
-        await saveAnswer(session.respondentId, q.id, JSON.stringify(selected), meta)
-      } else if (value !== null && value !== undefined && value !== '') {
-        await saveAnswer(session.respondentId, q.id, value, meta)
-      }
-
-      // Log event
-      await logEvent(session.respondentId, 'question_answered', {
-        question_id: q.id, selected_product: session.product, assigned_lab: session.lab
-      })
-    } else if (value === null || value === undefined || value === '') {
-      await logEvent(session.respondentId, 'question_skipped', {
-        question_id: q?.id, selected_product: session.product, assigned_lab: session.lab
-      })
+      try {
+        if (q.type === 'multi') {
+          await saveAnswer(session.respondentId, q.id, JSON.stringify(multiAnswer), meta)
+        } else if (value !== null && value !== undefined && value !== '') {
+          await saveAnswer(session.respondentId, q.id, value, meta)
+        }
+        await logEvent(session.respondentId, 'question_answered', {
+          question_id: q.id, selected_product: session.product, assigned_lab: session.lab
+        })
+      } catch (e) { console.warn('DB save failed (non-blocking):', e) }
     }
 
     // Determine next screen
@@ -123,26 +117,30 @@ export default function Survey() {
     const newSession = { ...session, answers: newAnswers, currentScreen: next }
 
     // Handle product selection
-    if (q?.id === 'S04' && value) {
-      const product = typeof value === 'object' ? value.id : value
-      newSession.product = product
-      await updateRespondent(session.respondentId, { selected_product: product })
-      await logEvent(session.respondentId, 'product_selected', { selected_product: product })
-    }
-
-    // Handle brand status from S03
-    if (q?.id === 'S03' && value) {
-      const optId = typeof value === 'object' ? value.id : value
-      const brandStatus = q.brandStatusMap?.[optId]
-      if (brandStatus) await updateRespondent(session.respondentId, { brand_status: brandStatus })
-    }
+    try {
+      if (q?.id === 'S04' && value) {
+        const product = typeof value === 'object' ? value.id : value
+        newSession.product = product
+        await updateRespondent(session.respondentId, { selected_product: product })
+      }
+      if (q?.id === 'S03' && value) {
+        const optId = typeof value === 'object' ? value.id : value
+        const brandStatus = q.brandStatusMap?.[optId]
+        if (brandStatus) await updateRespondent(session.respondentId, { brand_status: brandStatus })
+      }
+    } catch (e) { console.warn('DB update failed:', e) }
 
     // Handle ROUTER — assign lab
     if (next === 'ROUTER') {
-      const lab = await assignLab(session.respondentId, newSession.product)
-      newSession.lab = lab
-      const labQuestions = LAB_QUESTIONS[lab]
-      next = labQuestions?.[0]?.id || 'DEMOGRAPHY'
+      try {
+        const lab = await assignLab(session.respondentId, newSession.product)
+        newSession.lab = lab
+        const labQuestions = LAB_QUESTIONS[lab]
+        next = labQuestions?.[0]?.id || 'D01'
+      } catch (e) {
+        console.warn('Lab assign failed:', e)
+        next = 'D01' // skip lab, go to demography
+      }
     }
 
     // Handle END
