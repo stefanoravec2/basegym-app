@@ -11,6 +11,7 @@ export default function Calendar() {
   const [reservations, setReservations] = useState([])
   const [credits, setCredits] = useState(null)
   const [lastCredit, setLastCredit] = useState(null)
+  const [topupRequest, setTopupRequest] = useState(null)
   const [dayPlans, setDayPlans] = useState({})
   const [expandedPlan, setExpandedPlan] = useState(null)
   const [motivationBanner, setMotivationBanner] = useState(null)
@@ -121,6 +122,15 @@ export default function Calendar() {
       .limit(1)
       .maybeSingle()
     setCredits(cr || null)
+    const { data: tu } = await supabase
+      .from('credit_topup_requests')
+      .select('*')
+      .eq('client_firebase_uid', user.uid)
+      .eq('status', 'pending')
+      .order('requested_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    setTopupRequest(tu || null)
     const { data: gh } = await supabase.from('client_goal_history').select('*').eq('client_firebase_uid', user.uid).order('effective_from', { ascending: true })
     setGoalHistory(gh || [])
     if (!cr) {
@@ -144,7 +154,28 @@ export default function Calendar() {
   }
   function formatTime(dt) { return new Date(dt).toLocaleTimeString('sk-SK', { hour: '2-digit', minute: '2-digit' }) }
 
+  async function requestTopup(training) {
+    if (topupRequest) return
+    const { error } = await supabase.from('credit_topup_requests').insert({
+      client_firebase_uid: user.uid, client_id: profile?.id, training_id: training.id, status: 'pending'
+    })
+    if (error) { showMsg('Nepodarilo sa odoslať žiadosť. Skús znova.', 'red'); return }
+    const { error: resErr } = await supabase.from('reservations').insert({
+      training_id: training.id, client_firebase_uid: user.uid,
+      client_id: profile?.id, credits_deducted: 0, status: 'active'
+    })
+    if (resErr && resErr.code !== '23505') { showMsg('Nepodarilo sa prihlásiť. Skús znova.', 'red'); return }
+    await supabase.from('credit_logs').insert({
+      client_firebase_uid: user.uid, client_id: profile?.id, change_amount: 0,
+      reason: `Žiadosť o 1 kredit na prihlásenie: ${training.title} (čaká na trénera)`,
+      training_id: training.id
+    })
+    showMsg('Prihlásený/á! Tréner ti čoskoro doplní kredity. 🎉')
+    loadData()
+  }
+
   async function reserve(training) {
+    if (topupRequest) { showMsg('Čakáš na vybavenie kreditu trénerom. Do vyriešenia sa nemôžeš prihlasovať.', 'red'); return }
     if (!credits || credits.amount <= 0) { showMsg('Nemáš dosť kreditov. Kontaktuj trénera.', 'red'); return }
     const cost = training.credits_cost || 1
     if (credits.amount < cost) { showMsg(`Na tento tréning potrebuješ ${cost} kredit(y). Máš len ${credits.amount}.`, 'red'); return }
@@ -173,6 +204,10 @@ export default function Calendar() {
     const res = reservations.find(r => r.training_id === training.id)
     if (!res) return
     await supabase.from('reservations').update({ status: 'cancelled', cancelled_at: new Date().toISOString() }).eq('id', res.id)
+    if (topupRequest && topupRequest.training_id === training.id) {
+      await supabase.from('credit_topup_requests').update({ status: 'cancelled' }).eq('id', topupRequest.id)
+      showMsg('Rezervácia zrušená.'); loadData(); return
+    }
     if (credits) {
       const refund = res.credits_deducted || 1
       await supabase.from('credits').update({ amount: credits.amount + refund }).eq('id', credits.id)
@@ -220,6 +255,13 @@ export default function Calendar() {
           <div className="ring">👋</div>
           <h3 className="display">Vitaj v BaseGym!</h3>
           <p>Ešte nemáš aktívne kredity. Príď na recepciu alebo napíš trénerovi, nech ti aktivuje prvú permanentku.</p>
+        </div>
+      )}
+      {topupRequest && (
+        <div className="welcome-card amber" style={{ marginTop: '-4px' }}>
+          <div className="ring">🔒</div>
+          <h3 className="display" style={{ fontSize: '17px' }}>Čaká sa na trénera</h3>
+          <p>Si prihlásený/á na tréning cez 1 kredit navyše. Tréner ti čoskoro doplní zvyšné kredity permanentky. Do vyriešenia sa nemôžeš prihlasovať na ďalšie tréningy.</p>
         </div>
       )}
       {motivationBanner === 'streak' && (
@@ -381,10 +423,14 @@ export default function Calendar() {
                                 <div style={{ fontSize: '9.5px', color: 'var(--text-hint)', marginTop: '4px' }}>Najneskôr 30 min pred začiatkom</div>
                               </div>
                             ) : !past && (
-                              registrationClosed ? (
+                              topupRequest ? (
+                                <span style={{ fontSize: '11.5px', color: '#8A8A82', fontWeight: '600', background: '#F1EEE4', padding: '6px 12px', borderRadius: '20px' }}>🔒 Čaká sa na trénera</span>
+                              ) : registrationClosed ? (
                                 <span style={{ fontSize: '12px', color: 'var(--text-hint)', fontWeight: '500' }}>Prihlasovanie uzavreté</span>
                               ) : full ? (
-                                <button disabled style={{ background: '#F2F2EF', border: '1px solid var(--border-md)', color: 'var(--text-hint)', padding: '8px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'default' }}>Plné</button>
+                                <button disabled style={{ background: '#F2F2EF', border: '1px solid var(--border-md)', color: 'var(--text-hint)', padding: '8px 18px', borderRadius: '10px', fontSize: '13px', cursor: 'default' }}>Plmé</button>
+                              ) : (!credits || credits.amount < (t.credits_cost || 1)) ? (
+                                <button onClick={() => requestTopup(t)} className="btn btn-green" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Chcem 1 kredit na prihlásenie</button>
                               ) : (
                                 <button onClick={() => reserve(t)} className="btn btn-green" style={{ padding: '8px 18px', fontSize: '13px', fontWeight: '600' }}>Prihlásiť sa</button>
                               )
