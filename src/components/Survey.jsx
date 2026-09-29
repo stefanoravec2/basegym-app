@@ -213,9 +213,12 @@ export default function Survey() {
   return (
     <div className="hc-app">
       <header className="hc-header">
-        <a className="hc-logo" href="https://hellococo.cz" target="_blank" rel="noopener">
-          <img src="/assets/hello-coco-logo.png" alt="hello coco" />
-        </a>
+        <div className="hc-header-row">
+          <a className="hc-logo" href="https://hellococo.cz" target="_blank" rel="noopener">
+            <img src="/assets/hello-coco-logo.png" alt="hello coco" />
+          </a>
+          <span className="hc-step-badge">{currentStep} / {totalSteps}</span>
+        </div>
         <div className="hc-progress">
           <span className="hc-progress__bar" style={{ width: `${progress}%` }} />
         </div>
@@ -225,7 +228,6 @@ export default function Survey() {
         {q.type === 'intro' ? (
           <IntroScreen q={q} onStart={() => {
             setScreen('S01')
-            // Log start event in background
             if (session?.respondentId) logEvent(session.respondentId, 'survey_started', {})
           }} />
         ) : (
@@ -235,7 +237,7 @@ export default function Survey() {
             {q.helper && <p className="hc-helper">{q.helper}</p>}
 
             {q.showProductImage && (
-              <img src={q.showProductImage} alt="" style={{ width: '100%', maxWidth: 200, borderRadius: 16, margin: '0 auto 20px', display: 'block' }} />
+              <img src={q.showProductImage} alt="" style={{ width: '100%', maxWidth: 180, borderRadius: 14, margin: '0 auto 18px', display: 'block' }} />
             )}
 
             <div className="hc-answer">
@@ -259,7 +261,7 @@ export default function Survey() {
                     rows={3}
                   />
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--hc-muted)' }}>
+                  <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--muted)', fontSize: 32, fontWeight: 700 }}>
                     {timerLeft}
                   </div>
                 )
@@ -271,9 +273,10 @@ export default function Survey() {
                     <button
                       key={opt.id}
                       className={`hc-option ${answer?.id === opt.id ? 'selected' : ''}`}
-                      onClick={() => { setAnswer(opt); setTimeout(() => handleNext(opt), 100) }}
+                      onClick={() => { setAnswer(opt); setTimeout(() => handleNext(opt), 120) }}
                     >
-                      {opt.label}
+                      <span className="hc-option-radio" />
+                      <span className="hc-option-label">{opt.label}</span>
                     </button>
                   ))}
                 </div>
@@ -394,15 +397,23 @@ function hasValue(q, answer, multiAnswer) {
 function IntroScreen({ q, onStart }) {
   return (
     <div className="hc-intro">
-      <div className="hc-intro-arch">
-        <img src="/assets/hello-coco-logo.png" alt="hello coco" style={{ height: 44, width: 'auto' }} />
+      <div className="hc-intro-card">
+        <div className="hc-intro-logo-area">
+          <img className="hc-intro-logo" src="/assets/hello-coco-logo.png" alt="hello coco" />
+          <div className="hc-intro-divider" />
+          <div className="hc-intro-tag">Customer Lab · Praha 2026</div>
+          <h1 className="hc-intro-h1">{q.headline}</h1>
+          <p className="hc-intro-sub">{q.body}</p>
+        </div>
+        <div className="hc-intro-meta">
+          <div className="hc-meta-pill">~3 min<span>délka</span></div>
+          <div className="hc-meta-pill">Anonymní<span>data</span></div>
+          <div className="hc-meta-pill">20% sleva<span>odměna</span></div>
+        </div>
+        <div className="hc-intro-cta">
+          <button className="hc-primary" onClick={onStart}>{q.cta}</button>
+        </div>
       </div>
-      <div className="hc-intro-badge">Customer Lab · Praha 2026</div>
-      <h1>{q.headline}</h1>
-      <p>{q.body}</p>
-      <button className="hc-primary" style={{ maxWidth: 360, alignSelf: 'stretch' }} onClick={onStart}>
-        {q.cta}
-      </button>
     </div>
   )
 }
@@ -413,7 +424,7 @@ function EndScreen({ session, email, setEmail, emailSent, setEmailSent }) {
   async function handleEmail() {
     if (!email.includes('@')) return
     setSaving(true)
-    await saveEmailLead(session.respondentId, email)
+    try { await saveEmailLead(session.respondentId, email) } catch (e) { console.warn(e) }
     setEmailSent(true)
     setSaving(false)
   }
@@ -421,27 +432,26 @@ function EndScreen({ session, email, setEmail, emailSent, setEmailSent }) {
   return (
     <div className="hc-app">
       <header className="hc-header">
-        <a className="hc-logo"><img src="/assets/hello-coco-logo.png" alt="hello coco" /></a>
+        <div className="hc-header-row">
+          <div className="hc-logo"><img src="/assets/hello-coco-logo.png" alt="hello coco" /></div>
+          <span className="hc-step-badge">Hotovo</span>
+        </div>
         <div className="hc-progress"><span className="hc-progress__bar" style={{ width: '100%' }} /></div>
       </header>
       <main className="hc-screen">
-          <div className="hc-card" style={{ marginTop: 40, textAlign: 'center' }}>
-          <div className="hc-end-icon">🙌</div>
-          <h1 className="hc-question">Děkujeme!</h1>
-          <p className="hc-helper">
-            Tvoje odpovědi nám pomůžou dělat produkty a komunikaci, které dávají lidem větší smysl.
-          </p>
-
+        <div className="hc-end-hero">
+          <img className="hc-end-logo" src="/assets/hello-coco-logo.png" alt="hello coco" />
+          <h1 className="hc-end-h1">Děkujeme za tvůj čas.</h1>
+          <p className="hc-end-sub">Tvoje odpovědi nám pomůžou dělat produkty a komunikaci, které dávají lidem větší smysl.</p>
+        </div>
+        <div className="hc-card">
           {!emailSent ? (
             <>
               <div className="hc-discount-box">
-                <p style={{ fontSize: 14, color: 'var(--hc-muted)', marginBottom: 6 }}>Jako poděkování dostaneš</p>
+                <div className="hc-discount-label">Odměna za vyplnění</div>
                 <div className="hc-discount-code">PRAHA20</div>
-                <p style={{ fontSize: 14, color: 'var(--hc-muted)', marginTop: 6 }}>20% sleva na celý rok</p>
+                <div className="hc-discount-note">20 % sleva · platí celý rok na hellococo.cz</div>
               </div>
-              <p style={{ fontSize: 15, color: 'var(--hc-muted)', marginBottom: 16 }}>
-                Zadej svůj email a pošleme ti kód přímo:
-              </p>
               <input
                 type="email"
                 className="hc-email-input"
@@ -449,22 +459,19 @@ function EndScreen({ session, email, setEmail, emailSent, setEmailSent }) {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
-              <button className="hc-primary" onClick={handleEmail} disabled={saving || !email.includes('@')}>
-                {saving ? 'Odesíláme…' : 'Poslat kód na email'}
-              </button>
-              <button className="hc-skip" onClick={() => setEmailSent(true)}>
-                Nechci slevu, díky
-              </button>
+              <div className="hc-actions">
+                <button className="hc-primary" onClick={handleEmail} disabled={saving || !email.includes('@')}>
+                  {saving ? 'Odesíláme…' : 'Poslat kód na email'}
+                </button>
+                <button className="hc-skip" onClick={() => setEmailSent(true)}>Nechci slevu, díky</button>
+              </div>
             </>
           ) : (
-            <div style={{ padding: '20px 0' }}>
-              {email ? (
-                <p style={{ fontSize: 16, color: 'var(--hc-success)', fontWeight: 600 }}>
-                  ✓ Kód PRAHA20 jsme ti poslali na {email}
-                </p>
-              ) : (
-                <p style={{ fontSize: 15, color: 'var(--hc-muted)' }}>Kód: <strong>PRAHA20</strong> — 20% sleva platí celý rok na hellococo.cz</p>
-              )}
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              {email
+                ? <p style={{ fontSize: 15, color: '#2E7D32', fontWeight: 700 }}>Kód PRAHA20 jsme ti poslali na {email}</p>
+                : <p style={{ fontSize: 14, color: 'var(--muted)' }}>Kód: <strong style={{color:'var(--purple)'}}>PRAHA20</strong> — 20 % sleva platí celý rok na hellococo.cz</p>
+              }
             </div>
           )}
         </div>
