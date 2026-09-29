@@ -26,7 +26,11 @@ export default function Survey() {
       setScreen(s.currentScreen || 'S00')
       setLoading(false)
     }).catch(e => {
-      console.error(e)
+      console.error('Session init error:', e)
+      // Fallback — funguj aj bez DB
+      const fallback = { respondentId: crypto.randomUUID(), currentScreen: 'S00', answers: {}, product: null, lab: null }
+      setSession(fallback)
+      setScreen('S00')
       setLoading(false)
     })
   }, [])
@@ -209,7 +213,11 @@ export default function Survey() {
         <div className="hc-arch hc-arch--top" />
 
         {q.type === 'intro' ? (
-          <IntroScreen q={q} onStart={() => handleNext(null, true)} />
+          <IntroScreen q={q} onStart={() => {
+            setScreen('S01')
+            // Log start event in background
+            if (session?.respondentId) logEvent(session.respondentId, 'survey_started', {})
+          }} />
         ) : (
           <div className="hc-card">
             {q.stepLabel && <p className="hc-step">{q.stepLabel}</p>}
