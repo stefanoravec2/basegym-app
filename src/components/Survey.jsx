@@ -353,14 +353,13 @@ export default function Survey() {
                     </button>
                   ))}
                   {(!q.sameAsV01 || !v01Assets) && orderedOptions(q.options)?.filter(o => !o.asset).map(opt => (
-                      <button
-                        key={opt.id}
-                        className={`hc-option ${answer?.id === opt.id ? 'selected' : ''}`}
-                        onClick={() => { setAnswer(opt); setTimeout(() => handleNext(opt), 100) }}
-                      >
-                        {opt.label}
-                      </button>
-                    )
+                    <button
+                      key={opt.id}
+                      className={`hc-option ${answer?.id === opt.id ? 'selected' : ''}`}
+                      onClick={() => { setAnswer(opt); setTimeout(() => handleNext(opt), 100) }}
+                    >
+                      {opt.label}
+                    </button>
                   ))}
                 </div>
               )}
