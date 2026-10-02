@@ -412,36 +412,30 @@ export const TOOTHPASTE = [
   }
 ]
 
-// VISUAL LAB (NEEDRA/CCT/PAP/TOOTHPASTE — assets loaded from DB)
+// VISUAL LAB — zjednodušená verzia bez obrázkov
 export const VISUAL_LAB = [
   {
-    id: 'V01', type: 'timed_grid', required: false,
-    lab: 'VISUAL_LAB', duration: 2000,
-    question: 'Podívej se na obrázky.',
-    helper: 'Za 2 sekundy zmizí.',
-    next: 'V02'
+    id: 'V01', type: 'textarea', required: false,
+    lab: 'VISUAL_LAB',
+    question: 'Kdybys měl/a popsat ideální reklamu na tento produkt, jak by vypadala?',
+    placeholder: 'Stačí pár slov…',
+    voc_tag: 'HOOK_LANGUAGE',
+    next: 'V03'
   },
   {
-    id: 'V02', type: 'image_single', required: true,
-    lab: 'VISUAL_LAB',
-    question: 'Kterého obrázku sis všiml/a jako prvního?',
-    sameAsV01: true,
-    dimension: 'ATTENTION',
+    id: 'V02', inactive: true,
     next: 'V03'
   },
   {
     id: 'V03', type: 'textarea', required: false,
     lab: 'VISUAL_LAB',
-    question: 'Co tě na něm zaujalo?',
+    question: 'Co tě na produktu nejvíc zaujalo?',
     placeholder: 'Stačí pár slov…',
-    voc_tag: 'HOOK_LANGUAGE', next: 'V04'
+    voc_tag: 'HOOK_LANGUAGE',
+    next: 'V05'
   },
   {
-    id: 'V04', type: 'timed_single', required: false,
-    lab: 'VISUAL_LAB', duration: 3000,
-    question: 'Co podle tebe tento obrázek komunikoval?',
-    placeholder: 'Stačí pár slov…',
-    dimension: 'COMPREHENSION',
+    id: 'V04', inactive: true,
     next: 'V05'
   },
   {
@@ -449,22 +443,19 @@ export const VISUAL_LAB = [
     lab: 'VISUAL_LAB',
     question: 'Co si myslíš, že produkt dělá?',
     placeholder: 'Stačí pár slov…',
-    next: 'V06'
+    next: 'V07'
   },
   {
-    id: 'V06', type: 'image_single', required: true,
-    lab: 'VISUAL_LAB',
-    question: 'Který z nich by ti nejvíc pomohl rozhodnout se, jestli chceš o produktu vědět víc?',
-    sameAsV01: true,
-    dimension: 'CONVERSION',
+    id: 'V06', inactive: true,
     next: 'V07'
   },
   {
     id: 'V07', type: 'textarea', required: false,
     lab: 'VISUAL_LAB',
-    question: 'Proč právě tento?',
+    question: 'Co by tě přesvědčilo produkt vyzkoušet?',
     placeholder: 'Stačí pár slov…',
-    voc_tag: 'PURCHASE_TRIGGER', next: 'DEMOGRAPHY'
+    voc_tag: 'PURCHASE_TRIGGER',
+    next: 'DEMOGRAPHY'
   }
 ]
 

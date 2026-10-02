@@ -41,6 +41,13 @@ export default function Survey() {
   const currentStep = Object.keys(session?.answers || {}).length
   const progress = Math.min(100, Math.round((currentStep / totalSteps) * 100))
 
+  // Auto-skip inactive questions
+  useEffect(() => {
+    if (q?.inactive && q?.next) {
+      setScreen(q.next)
+    }
+  }, [screen])
+
   // Randomize options when screen changes
   useEffect(() => {
     if (!q) return
