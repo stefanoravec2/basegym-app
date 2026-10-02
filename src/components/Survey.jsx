@@ -58,10 +58,9 @@ export default function Survey() {
     }
   }, [screen])
 
-  // Load Visual Lab assets from DB when we reach V01
+  // Load Visual Lab assets from DB as soon as product is known
   useEffect(() => {
-    if (screen !== 'V01' || !session?.product) return
-    if (v01Assets) return // already loaded
+    if (!session?.product || v01Assets) return
 
     supabase
       .from('hc_assets')
@@ -78,7 +77,7 @@ export default function Survey() {
           setV01Assets(assets)
         }
       })
-  }, [screen, session?.product])
+  }, [session?.product])
 
   // Timed visual handler
   useEffect(() => {
@@ -343,7 +342,10 @@ export default function Survey() {
 
               {q.type === 'image_single' && !q.inactive && (
                 <div className="hc-image-grid">
-                  {(q.sameAsV01 && v01Assets ? v01Assets : orderedOptions(q.options))?.filter(o => o.asset).map(opt => (
+                  {q.sameAsV01 && !v01Assets && (
+                    <div style={{ color: 'var(--hc-muted)', textAlign: 'center', padding: 40 }}>Načítáme obrázky…</div>
+                  )}
+                  {(q.sameAsV01 ? v01Assets : orderedOptions(q.options))?.filter(o => o.asset).map(opt => (
                     <button
                       key={opt.id}
                       className={`hc-image-option ${answer?.id === opt.id ? 'selected' : ''}`}
@@ -352,7 +354,7 @@ export default function Survey() {
                       <img src={opt.asset} alt={opt.label} />
                     </button>
                   ))}
-                  {(!q.sameAsV01 || !v01Assets) && orderedOptions(q.options)?.filter(o => !o.asset).map(opt => (
+                  {!q.sameAsV01 && orderedOptions(q.options)?.filter(o => !o.asset).map(opt => (
                     <button
                       key={opt.id}
                       className={`hc-option ${answer?.id === opt.id ? 'selected' : ''}`}
