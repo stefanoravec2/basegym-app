@@ -455,6 +455,7 @@ export const VISUAL_LAB = [
     id: 'V06', type: 'image_single', required: true,
     lab: 'VISUAL_LAB',
     question: 'Který z nich by ti nejvíc pomohl rozhodnout se, jestli chceš o produktu vědět víc?',
+    sameAsV01: true,
     dimension: 'CONVERSION',
     next: 'V07'
   },
