@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { buildQuestionMap, estimateTotal, FREE_END_QUESTION, LAB_QUESTIONS } from '../data/questions'
 import { initSession, saveSessionLocal, saveAnswer, updateRespondent, logEvent, assignLab, completeSession, saveEmailLead } from '../lib/session'
+import { supabase } from '../lib/supabase'
 
 const QMap = buildQuestionMap()
 
@@ -56,6 +57,28 @@ export default function Survey() {
       setShownOrder(q.options?.map(o => o.id) || null)
     }
   }, [screen])
+
+  // Load Visual Lab assets from DB when we reach V01
+  useEffect(() => {
+    if (screen !== 'V01' || !session?.product) return
+    if (v01Assets) return // already loaded
+
+    supabase
+      .from('hc_assets')
+      .select('id, variant_type, file_path')
+      .eq('product', session.product)
+      .eq('active', true)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          const assets = data.map(a => ({
+            id: a.id,
+            label: a.variant_type,
+            asset: a.file_path
+          }))
+          setV01Assets(assets)
+        }
+      })
+  }, [screen, session?.product])
 
   // Timed visual handler
   useEffect(() => {
@@ -305,19 +328,31 @@ export default function Survey() {
                 </>
               )}
 
+              {q.type === 'timed_grid' && (
+                <div className="hc-image-grid" style={{ pointerEvents: 'none' }}>
+                  {v01Assets
+                    ? v01Assets.map(opt => (
+                        <div key={opt.id} className="hc-image-option" style={{ cursor: 'default' }}>
+                          <img src={opt.asset} alt={opt.label} />
+                        </div>
+                      ))
+                    : <div style={{ color: 'var(--hc-muted)', textAlign: 'center', padding: 40 }}>Načítáme obrázky…</div>
+                  }
+                </div>
+              )}
+
               {q.type === 'image_single' && !q.inactive && (
                 <div className="hc-image-grid">
-                  {orderedOptions(q.options)?.filter(o => o.asset || !q.options.some(x => x.asset)).map(opt => (
-                    opt.asset ? (
-                      <button
-                        key={opt.id}
-                        className={`hc-image-option ${answer?.id === opt.id ? 'selected' : ''}`}
-                        onClick={() => { setAnswer(opt); setTimeout(() => handleNext(opt), 100) }}
-                      >
-                        <img src={opt.asset} alt={opt.label} />
-                        {opt.label && <span>{opt.label}</span>}
-                      </button>
-                    ) : (
+                  {(q.sameAsV01 && v01Assets ? v01Assets : orderedOptions(q.options))?.filter(o => o.asset).map(opt => (
+                    <button
+                      key={opt.id}
+                      className={`hc-image-option ${answer?.id === opt.id ? 'selected' : ''}`}
+                      onClick={() => { setAnswer(opt); setTimeout(() => handleNext(opt), 100) }}
+                    >
+                      <img src={opt.asset} alt={opt.label} />
+                    </button>
+                  ))}
+                  {(!q.sameAsV01 || !v01Assets) && orderedOptions(q.options)?.filter(o => !o.asset).map(opt => (
                       <button
                         key={opt.id}
                         className={`hc-option ${answer?.id === opt.id ? 'selected' : ''}`}
