@@ -18,7 +18,7 @@ export async function initSession() {
   // Create new respondent
   const { data, error } = await supabase
     .from('hc_respondents')
-    .insert({ language: 'cs', questionnaire_version: '1.0' })
+    .insert({ language: 'cs', questionnaire_version: '1.1' })
     .select('id')
     .single()
 
@@ -65,7 +65,7 @@ export async function logEvent(respondentId, eventType, meta = {}) {
   await supabase.from('hc_events').insert({
     respondent_id: respondentId,
     event_type: eventType,
-    questionnaire_version: '1.0',
+    questionnaire_version: '1.1',
     ...meta
   })
 }
