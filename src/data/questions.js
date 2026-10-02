@@ -20,15 +20,7 @@ export const COMMON = [
     next: 'S01'
   },
   {
-    id: 'S01', type: 'textarea', required: false,
-    stepLabel: 'Spontánní znalost',
-    question: 'Když se řekne domácí bělení zubů, které značky tě napadnou?',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'BRAND',
-    next: 'S02'
-  },
-  {
-    id: 'S02', type: 'single', required: true,
+    id: 'S01', type: 'single', required: true,
     stepLabel: 'Znalost značky',
     question: 'Znal/a jsi hello coco už před dneškem?',
     options: [
@@ -36,10 +28,10 @@ export const COMMON = [
       { id: 'no', label: 'Ne' },
       { id: 'unsure', label: 'Nejsem si jistý/á' }
     ],
-    branch: { yes: 'S03', no: 'S04', unsure: 'S04' }
+    branch: { yes: 'S02', no: 'S03', unsure: 'S03' }
   },
   {
-    id: 'S03', type: 'single', required: true,
+    id: 'S02', type: 'single', required: true,
     stepLabel: 'Zkušenost se značkou',
     question: 'Koupil/a sis už někdy produkt hello coco?',
     options: [
@@ -49,17 +41,17 @@ export const COMMON = [
       { id: 'unsure', label: 'Nevím' }
     ],
     brandStatusMap: { repeat: 'HC_REPEAT', once: 'HC_ONCE', aware: 'HC_AWARE_NONBUYER', unsure: 'HC_UNSURE' },
-    next: 'S04'
+    next: 'S03'
   },
   {
-    id: 'S04', type: 'image_single', required: true,
+    id: 'S03', type: 'single', required: true,
     stepLabel: 'Výběr produktu',
     question: 'Který z těchto produktů tě dnes zaujal nejvíc?',
     options: [
-      { id: 'NEEDRA', label: 'Needra', asset: '/assets/S04_NEEDRA.png' },
-      { id: 'CCT', label: 'Fialové CCT pásky', asset: '/assets/S04_CCT.png' },
-      { id: 'PAP', label: 'Zelené PAP pásky', asset: '/assets/S04_PAP.png' },
-      { id: 'TOOTHPASTE', label: 'Zubní pasty', asset: '/assets/S04_TOOTHPASTE.png', composite: true }
+      { id: 'NEEDRA', label: 'Needra Shot — plnější rty' },
+      { id: 'CCT', label: 'Bělicí pásky CCT (fialové)' },
+      { id: 'PAP', label: 'Bělicí pásky PAP (zelené)' },
+      { id: 'TOOTHPASTE', label: 'Zubní pasty' }
     ],
     branch: { NEEDRA: 'N00', CCT: 'C00', PAP: 'P00', TOOTHPASTE: 'T00' }
   }
@@ -71,7 +63,6 @@ export const NEEDRA = [
     id: 'N00', type: 'textarea', required: false,
     product: 'NEEDRA', stepLabel: 'Needra',
     question: 'Co si myslíš, že tento produkt dělá?',
-    showProductImage: '/assets/S04_NEEDRA.png',
     placeholder: 'Stačí pár slov…',
     voc_tag: 'PRODUCT_LANGUAGE', next: 'N01'
   },
@@ -109,13 +100,12 @@ export const NEEDRA = [
     voc_tag: 'PROBLEM', next: 'N05'
   },
   {
-    id: 'N05', type: 'image_single', required: true,
+    id: 'N05', type: 'single', required: true,
     product: 'NEEDRA', stepLabel: 'Needra',
     question: 'Který odstín tě zaujal víc?',
-    randomize: true,
     options: [
-      { id: 'CRYSTAL', label: 'Crystal', asset: '/assets/N05_CRYSTAL.png' },
-      { id: 'ROSE', label: 'Rose', asset: '/assets/N05_ROSE.png' },
+      { id: 'CRYSTAL', label: 'Crystal — průhledný, přirozený efekt' },
+      { id: 'ROSE', label: 'Rose — růžový, výraznější efekt' },
       { id: 'SAME', label: 'Je mi to jedno' }
     ],
     next: 'N06'
@@ -128,14 +118,7 @@ export const NEEDRA = [
     voc_tag: 'DESIRE', next: 'N07'
   },
   {
-    id: 'N07', type: 'textarea', required: false,
-    product: 'NEEDRA', stepLabel: 'Needra',
-    question: 'Kdy bys takový produkt nejspíš použil/a?',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'USE_OCCASION', next: 'N08'
-  },
-  {
-    id: 'N08', type: 'multi', required: false, maxSelect: 3,
+    id: 'N07', type: 'multi', required: false, maxSelect: 3,
     product: 'NEEDRA', stepLabel: 'Needra',
     question: 'Ve kterých situacích by ti dával smysl?',
     helper: 'Vyber až 3.',
@@ -148,7 +131,6 @@ export const NEEDRA = [
       { id: 'photo', label: 'Focení' },
       { id: 'special', label: 'Speciální událost' },
       { id: 'holiday', label: 'Dovolená' },
-      { id: 'content', label: 'Tvorba obsahu' },
       { id: 'never', label: 'Nepoužíval/a bych' },
       { id: 'other', label: 'Jiné' }
     ],
@@ -193,7 +175,6 @@ export const CCT = [
     id: 'C04', type: 'textarea', required: false,
     product: 'CCT', stepLabel: 'CCT pásky',
     question: 'Co od těchto pásků očekáváš?',
-    showProductImage: '/assets/S04_CCT.png',
     placeholder: 'Stačí pár slov…',
     voc_tag: 'PRODUCT_LANGUAGE', next: 'C05'
   },
@@ -202,14 +183,7 @@ export const CCT = [
     product: 'CCT', stepLabel: 'CCT pásky',
     question: 'Co bys o nich potřeboval/a vědět před koupí?',
     placeholder: 'Stačí pár slov…',
-    voc_tag: 'OBJECTION', next: 'C06'
-  },
-  {
-    id: 'C06', type: 'textarea', required: false,
-    product: 'CCT', stepLabel: 'CCT pásky',
-    question: 'Kdy by pro tebe dával rychle viditelný efekt na zubech největší smysl?',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'USE_OCCASION', next: 'FREE_END'
+    voc_tag: 'OBJECTION', next: 'FREE_END'
   }
 ]
 
@@ -247,7 +221,6 @@ export const PAP = [
     id: 'P02', type: 'textarea', required: false,
     product: 'PAP', stepLabel: 'PAP pásky',
     question: 'Co od těchto pásků očekáváš?',
-    showProductImage: '/assets/S04_PAP.png',
     placeholder: 'Stačí pár slov…',
     voc_tag: 'PRODUCT_LANGUAGE', next: 'P03'
   },
@@ -259,35 +232,19 @@ export const PAP = [
     voc_tag: 'PROBLEM', next: 'P04'
   },
   {
-    id: 'P04', type: 'textarea', required: false,
+    id: 'P04', type: 'single', required: true,
     product: 'PAP', stepLabel: 'PAP pásky',
-    question: 'Kdyby sis mohl/a vybrat jakoukoli příchuť bělicích pásků, jaká by to byla?',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'FLAVOR', next: 'P05'
-  },
-  {
-    id: 'P05', type: 'image_single', required: true,
-    product: 'PAP', stepLabel: 'PAP pásky',
-    question: 'Která z těchto příchutí tě láká víc?',
-    randomize: true,
-    inactive: true, // until assets delivered
+    question: 'Která příchuť tě láká víc?',
     options: [
-      { id: 'GRAPE', label: 'Grape', asset: null },
-      { id: 'WATERMELON', label: 'Watermelon', asset: null },
+      { id: 'GRAPE', label: 'Grape (hrozno)' },
+      { id: 'WATERMELON', label: 'Watermelon (melón)' },
       { id: 'NEITHER', label: 'Ani jedna' },
       { id: 'SAME', label: 'Je mi to jedno' }
     ],
-    next: 'P06'
+    next: 'P05'
   },
   {
-    id: 'P06', type: 'textarea', required: false,
-    product: 'PAP', stepLabel: 'PAP pásky',
-    question: 'Proč?',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'FLAVOR', next: 'P07'
-  },
-  {
-    id: 'P07', type: 'scale', required: true,
+    id: 'P05', type: 'scale', required: true,
     product: 'PAP', stepLabel: 'PAP pásky',
     question: 'Jak důležitá je pro tebe u bělicích pásků příjemná chuť?',
     labelMin: 'Vůbec není', labelMax: 'Velmi důležitá',
@@ -295,7 +252,7 @@ export const PAP = [
   }
 ]
 
-// TOOTHPASTE BRANCH
+// TOOTHPASTE BRANCH — skrátená verzia
 export const TOOTHPASTE = [
   {
     id: 'T00', type: 'textarea', required: false,
@@ -307,33 +264,19 @@ export const TOOTHPASTE = [
   {
     id: 'T01', type: 'textarea', required: false,
     product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
-    question: 'Jakou zubní pastu používáš teď?',
+    question: 'Jakou zubní pastu používáš teď a proč právě tu?',
     placeholder: 'Stačí pár slov…',
-    next: 'T02'
+    voc_tag: 'PURCHASE_TRIGGER', next: 'T02'
   },
   {
     id: 'T02', type: 'textarea', required: false,
     product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
-    question: 'Proč právě tu?',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'PURCHASE_TRIGGER', next: 'T03'
-  },
-  {
-    id: 'T03', type: 'textarea', required: false,
-    product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
     question: 'Kdybys mohl/a vytvořit ideální zubní pastu, co by měla dělat?',
     placeholder: 'Stačí pár slov…',
-    voc_tag: 'TOOTHPASTE_NEED', next: 'T04'
+    voc_tag: 'TOOTHPASTE_NEED', next: 'T03'
   },
   {
-    id: 'T04', type: 'textarea', required: false,
-    product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
-    question: 'A jaká by měla být? Klidně popiš chuť, pocit v ústech, vzhled nebo cokoli dalšího.',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'TOOTHPASTE_NEED', next: 'T05'
-  },
-  {
-    id: 'T05', type: 'multi', required: true, maxSelect: 3,
+    id: 'T03', type: 'multi', required: true, maxSelect: 3,
     product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
     question: 'Vyber maximálně 3 věci, které jsou pro tebe u pasty nejdůležitější.',
     randomize: true,
@@ -351,68 +294,30 @@ export const TOOTHPASTE = [
       { id: 'ingredients', label: 'Složení' },
       { id: 'other', label: 'Jiné' }
     ],
-    next: 'T06'
+    next: 'T04'
   },
   {
-    id: 'T06', type: 'image_single', required: true,
+    id: 'T04', type: 'single', required: true,
     product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
     question: 'Který směr tě zaujal víc?',
     options: [
-      { id: 'ENZI_WHITE', label: 'ENZI WHITE', asset: '/assets/T06_ENZI_WHITE.png' },
-      { id: 'PAP', label: 'PAP', asset: '/assets/T06_PAP.png' },
+      { id: 'ENZI_WHITE', label: 'ENZI WHITE — enzymatické bělení' },
+      { id: 'PAP', label: 'PAP — bělení bez peroxidu' },
       { id: 'BOTH', label: 'Oba stejně' },
       { id: 'NEITHER', label: 'Ani jeden' }
     ],
-    next: 'T07'
+    next: 'T05'
   },
   {
-    id: 'T07', type: 'textarea', required: false,
-    product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
-    question: 'Co tě na něm zaujalo?',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'DESIRE', next: 'T08'
-  },
-  {
-    id: 'T08', type: 'textarea', required: false,
-    product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
-    question: 'Co bys na vzhledu nebo obalu změnil/a, aby tě zaujal víc?',
-    placeholder: 'Stačí pár slov…',
-    voc_tag: 'PROBLEM', next: 'T09'
-  },
-  {
-    id: 'T09', type: 'textarea', required: false,
+    id: 'T05', type: 'textarea', required: false,
     product: 'TOOTHPASTE', stepLabel: 'Zubní pasty',
     question: 'Co bys o této pastě potřeboval/a vědět před koupí?',
     placeholder: 'Stačí pár slov…',
-    voc_tag: 'OBJECTION', next: 'T10'
-  },
-  {
-    id: 'T10', type: 'number', required: false,
-    product: 'TOOTHPASTE', stepLabel: 'Cena',
-    question: 'Při jaké ceně by ti taková pasta připadala podezřele levná?',
-    suffix: 'Kč', next: 'T11'
-  },
-  {
-    id: 'T11', type: 'number', required: false,
-    product: 'TOOTHPASTE', stepLabel: 'Cena',
-    question: 'Při jaké ceně by ti připadala jako dobrá koupě?',
-    suffix: 'Kč', next: 'T12'
-  },
-  {
-    id: 'T12', type: 'number', required: false,
-    product: 'TOOTHPASTE', stepLabel: 'Cena',
-    question: 'Při jaké ceně by už byla drahá, ale ještě bys ji zvážil/a?',
-    suffix: 'Kč', next: 'T13'
-  },
-  {
-    id: 'T13', type: 'number', required: false,
-    product: 'TOOTHPASTE', stepLabel: 'Cena',
-    question: 'Při jaké ceně by už byla příliš drahá na koupi?',
-    suffix: 'Kč', next: 'FREE_END'
+    voc_tag: 'OBJECTION', next: 'FREE_END'
   }
 ]
 
-// VISUAL LAB — zjednodušená verzia bez obrázkov
+// VISUAL LAB — textové otázky
 export const VISUAL_LAB = [
   {
     id: 'V01', type: 'textarea', required: false,
@@ -422,10 +327,7 @@ export const VISUAL_LAB = [
     voc_tag: 'HOOK_LANGUAGE',
     next: 'V03'
   },
-  {
-    id: 'V02', inactive: true,
-    next: 'V03'
-  },
+  { id: 'V02', inactive: true, next: 'V03' },
   {
     id: 'V03', type: 'textarea', required: false,
     lab: 'VISUAL_LAB',
@@ -434,10 +336,7 @@ export const VISUAL_LAB = [
     voc_tag: 'HOOK_LANGUAGE',
     next: 'V05'
   },
-  {
-    id: 'V04', inactive: true,
-    next: 'V05'
-  },
+  { id: 'V04', inactive: true, next: 'V05' },
   {
     id: 'V05', type: 'textarea', required: false,
     lab: 'VISUAL_LAB',
@@ -445,10 +344,7 @@ export const VISUAL_LAB = [
     placeholder: 'Stačí pár slov…',
     next: 'V07'
   },
-  {
-    id: 'V06', inactive: true,
-    next: 'V07'
-  },
+  { id: 'V06', inactive: true, next: 'V07' },
   {
     id: 'V07', type: 'textarea', required: false,
     lab: 'VISUAL_LAB',
@@ -462,43 +358,38 @@ export const VISUAL_LAB = [
 // HOOK LAB
 export const HOOK_LAB = [
   {
-    id: 'H01', type: 'timed_textarea', required: false,
-    lab: 'HOOK_MESSAGE_LAB', duration: 2500, hookIndex: 'A',
-    question: 'Co si myslíš, že ti tohle chtělo říct?',
+    id: 'H01', type: 'textarea', required: false,
+    lab: 'HOOK_MESSAGE_LAB',
+    question: 'Jaká slova nebo sdělení tě při pohledu na tento produkt napadají?',
     placeholder: 'Stačí pár slov…',
     voc_tag: 'HOOK_LANGUAGE', next: 'H02'
   },
   {
     id: 'H02', type: 'scale', required: true,
-    lab: 'HOOK_MESSAGE_LAB', hookIndex: 'A',
+    lab: 'HOOK_MESSAGE_LAB',
     question: 'Kdybys to viděl/a mezi příspěvky, co bys nejspíš udělal/a?',
     labelMin: 'Hned dál', labelMax: 'Určitě bych se zastavil/a',
     next: 'H03'
   },
   {
     id: 'H03', type: 'textarea', required: false,
-    lab: 'HOOK_MESSAGE_LAB', hookIndex: 'A',
-    question: 'Co bys chtěl/a vidět v dalších sekundách?',
+    lab: 'HOOK_MESSAGE_LAB',
+    question: 'Co bys chtěl/a vidět nebo vědět v dalších sekundách?',
     placeholder: 'Stačí pár slov…',
     voc_tag: 'DESIRE', next: 'H04'
   },
   {
     id: 'H04', type: 'scale', required: true,
-    lab: 'HOOK_MESSAGE_LAB', hookIndex: 'A',
-    question: 'Je to pro tebe osobně relevantní?',
+    lab: 'HOOK_MESSAGE_LAB',
+    question: 'Je toto sdělení pro tebe osobně relevantní?',
     labelMin: 'Vůbec', labelMax: 'Velmi',
     next: 'H05'
   },
   {
     id: 'H05', type: 'scale', required: true,
-    lab: 'HOOK_MESSAGE_LAB', hookIndex: 'A',
+    lab: 'HOOK_MESSAGE_LAB',
     question: 'Chtěl/a bys po tomhle o produktu vědět víc?',
     labelMin: 'Ne', labelMax: 'Ano',
-    next: 'H06'
-  },
-  {
-    id: 'H06', type: 'hook_b_repeat',
-    lab: 'HOOK_MESSAGE_LAB',
     next: 'DEMOGRAPHY'
   }
 ]
@@ -551,7 +442,7 @@ export const CONVERSION_TRUST_LAB = [
   }
 ]
 
-// FLAVOR CONCEPT LAB (PAP only — P05 active when assets delivered)
+// FLAVOR CONCEPT LAB (PAP only)
 export const FLAVOR_CONCEPT_LAB = [
   {
     id: 'FL01', type: 'textarea', required: false,
@@ -647,8 +538,8 @@ export function buildQuestionMap() {
 
 // Total question count per path (for progress bar)
 export function estimateTotal(product, lab) {
-  const baseCount = 4 // S01-S04
-  const branchCounts = { NEEDRA: 9, CCT: 7, PAP: 8, TOOTHPASTE: 14 }
-  const labCounts = { VISUAL_LAB: 7, VISUAL_PACKAGING_LAB: 7, HOOK_MESSAGE_LAB: 6, MESSAGE_BENEFIT_LAB: 6, CONVERSION_TRUST_LAB: 5, PRICE_CONVERSION_LAB: 5, FLAVOR_CONCEPT_LAB: 2 }
-  return baseCount + (branchCounts[product] || 8) + 1 + (labCounts[lab] || 6) + 3
+  const baseCount = 3 // S01-S03
+  const branchCounts = { NEEDRA: 8, CCT: 6, PAP: 6, TOOTHPASTE: 6 }
+  const labCounts = { VISUAL_LAB: 4, VISUAL_PACKAGING_LAB: 4, HOOK_MESSAGE_LAB: 5, MESSAGE_BENEFIT_LAB: 5, CONVERSION_TRUST_LAB: 5, PRICE_CONVERSION_LAB: 5, FLAVOR_CONCEPT_LAB: 2 }
+  return baseCount + (branchCounts[product] || 7) + 1 + (labCounts[lab] || 5) + 3
 }
