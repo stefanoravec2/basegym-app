@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { buildQuestionMap, estimateTotal, FREE_END_QUESTION, LAB_QUESTIONS } from '../data/questions'
-import { initSession, saveSessionLocal, saveAnswer, updateRespondent, logEvent, assignLab, completeSession, saveEmailLead } from '../lib/session'
+import { buildQuestionMap, estimateTotal } from '../data/questions'
+import { initSession, saveSessionLocal, saveAnswer, updateRespondent, logEvent, completeSession, saveEmailLead } from '../lib/session'
 import { supabase } from '../lib/supabase'
 
 const QMap = buildQuestionMap()
@@ -37,7 +37,7 @@ export default function Survey() {
   }, [])
 
   const q = QMap[screen]
-  const totalSteps = session ? estimateTotal(session.product, session.lab) : 30
+  const totalSteps = session ? estimateTotal(session.segment) : 18
   const currentStep = Object.keys(session?.answers || {}).length
   const progress = Math.min(100, Math.round((currentStep / totalSteps) * 100))
 
@@ -145,32 +145,19 @@ export default function Survey() {
     const newAnswers = { ...session.answers, [q?.id]: value }
     const newSession = { ...session, answers: newAnswers, currentScreen: next }
 
-    // Handle product selection
+    // Track segment (S01) and product (PULL01)
     try {
-      if (q?.id === 'S04' && value) {
+      if (q?.id === 'S01' && value) {
+        const seg = typeof value === 'object' ? value.id : value
+        newSession.segment = seg
+        await updateRespondent(session.respondentId, { brand_status: seg })
+      }
+      if (q?.id === 'PULL01' && value) {
         const product = typeof value === 'object' ? value.id : value
         newSession.product = product
         await updateRespondent(session.respondentId, { selected_product: product })
       }
-      if (q?.id === 'S03' && value) {
-        const optId = typeof value === 'object' ? value.id : value
-        const brandStatus = q.brandStatusMap?.[optId]
-        if (brandStatus) await updateRespondent(session.respondentId, { brand_status: brandStatus })
-      }
     } catch (e) { console.warn('DB update failed:', e) }
-
-    // Handle ROUTER — assign lab
-    if (next === 'ROUTER') {
-      try {
-        const lab = await assignLab(session.respondentId, newSession.product)
-        newSession.lab = lab
-        const labQuestions = LAB_QUESTIONS[lab]
-        next = labQuestions?.[0]?.id || 'D01'
-      } catch (e) {
-        console.warn('Lab assign failed:', e)
-        next = 'D01' // skip lab, go to demography
-      }
-    }
 
     // Handle END
     if (next === 'END') {
@@ -180,7 +167,7 @@ export default function Survey() {
       setScreen('END')
       setSubmitting(false)
       // Complete in background
-      completeSession(session.respondentId, newSession.product, newSession.lab, startedAt.current)
+      completeSession(session.respondentId, newSession.product, null, startedAt.current)
       return
     }
 
@@ -193,11 +180,6 @@ export default function Survey() {
 
   async function resolveNext(value) {
     if (!q) return 'S00'
-
-    // FREE_END injected before ROUTER
-    if (q.next === 'FREE_END') return 'FREE_END'
-    if (q.id === 'FREE_END') return 'ROUTER'
-
     // Branch
     if (q.branch && value) {
       const key = typeof value === 'object' ? value.id : value
@@ -208,18 +190,9 @@ export default function Survey() {
 
   async function handleSkip() {
     await logEvent(session.respondentId, 'question_skipped', { question_id: q?.id })
-    let next = await resolveNext(null)
-    if (next === 'FREE_END') next = 'FREE_END'
-    if (next === 'ROUTER') {
-      const lab = await assignLab(session.respondentId, session.product)
-      const newSession = { ...session, lab, currentScreen: 'DEMOGRAPHY' }
-      setSession(newSession)
-      saveSessionLocal(newSession)
-      const labQuestions = LAB_QUESTIONS[lab]
-      setScreen(labQuestions?.[0]?.id || 'DEMOGRAPHY')
-      return
-    }
-    setScreen(next)
+    const next = await resolveNext(null)
+    setScreen(next || 'END')
+    setSubmitting(false)
   }
 
   if (loading) return (
