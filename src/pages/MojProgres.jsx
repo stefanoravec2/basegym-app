@@ -320,7 +320,7 @@ export default function MojProgres() {
     try {
       const data = await apiFetch(user, 'exercises')
       setExercises(data)
-    } catch (e) { setError('Nepodarilo sa načítať cviky.') }
+    } catch (e) { setError('Nepodarilo sa načítať cviky: ' + e.message) }
   }, [user])
 
   const loadLogs = useCallback(async () => {
