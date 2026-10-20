@@ -5,6 +5,7 @@ import Calendar from './pages/Calendar'
 import Profile from './pages/Profile'
 import Info from './pages/Info'
 import TrainerPanel from './pages/TrainerPanel'
+import MojProgres from './pages/MojProgres'
 import { supabase } from './lib/supabase'
 import './index.css'
 
@@ -60,6 +61,7 @@ function AppInner() {
 
   const tabs = [
     { id: 'calendar', label: 'Rezervácie' },
+    { id: 'progres', label: 'Môj progres' },
     { id: 'profile', label: 'Môj profil' },
     { id: 'info', label: 'Informácie' },
   ]
@@ -101,6 +103,7 @@ function AppInner() {
       </div>
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '20px 20px 40px' }}>
         {tab === 'calendar' && <Calendar />}
+        {tab === 'progres' && <MojProgres />}
         {tab === 'profile' && <Profile />}
         {tab === 'info' && <Info />}
         {tab === 'trainer' && isTrainer && <TrainerPanel />}
