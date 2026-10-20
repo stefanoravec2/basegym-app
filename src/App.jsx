@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import Auth from './pages/Auth'
 import Calendar from './pages/Calendar'
@@ -6,6 +6,8 @@ import Profile from './pages/Profile'
 import Info from './pages/Info'
 import TrainerPanel from './pages/TrainerPanel'
 import MojProgres from './pages/MojProgres'
+import ReviewSheet from './components/ReviewSheet'
+import { usePushNotifications } from './hooks/usePushNotifications'
 import { supabase } from './lib/supabase'
 import './index.css'
 
@@ -32,6 +34,13 @@ function AppInner() {
   const { user, profile, loading, isTrainer } = useAuth()
   const [tab, setTab] = useState('calendar')
   const [membership, setMembership] = useState(null)
+  const [showReview, setShowReview] = useState(false)
+
+  const handleReviewMessage = useCallback(() => {
+    setShowReview(true)
+  }, [])
+
+  usePushNotifications(user, handleReviewMessage)
 
   useEffect(() => {
     if (!user) { setMembership(null); return }
@@ -108,6 +117,9 @@ function AppInner() {
         {tab === 'info' && <Info />}
         {tab === 'trainer' && isTrainer && <TrainerPanel />}
       </div>
+
+      {/* Review sheet — shown after training session */}
+      <ReviewSheet user={user} />
     </div>
   )
 }

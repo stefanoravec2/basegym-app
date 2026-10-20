@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
+import { getMessaging, getToken, onMessage } from 'firebase/messaging'
 
 const firebaseConfig = {
   apiKey: "AIzaSyDh-FAIvJv63TJpTvwyFCLqPlniS_I1Tdg",
@@ -12,3 +13,16 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
+
+let _messaging = null
+export function getFirebaseMessaging() {
+  if (_messaging) return _messaging
+  try {
+    _messaging = getMessaging(app)
+  } catch (e) {
+    // Messaging not supported (e.g. Safari without push support)
+    console.warn('Firebase messaging not supported:', e.message)
+  }
+  return _messaging
+}
+export { getToken, onMessage }
