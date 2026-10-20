@@ -6,7 +6,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 // VAPID key from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
 // You must generate this in Firebase Console and paste it here
-const VAPID_KEY = 'BIu_PLACEHOLDER_REPLACE_WITH_REAL_VAPID_KEY'
+const VAPID_KEY = 'BIXrrNNH-yuPC2CRxgDyCDaN40iGm9P03hX4v7OWZLhweB8pLsmiNxU5iYsyaGrsV8j4m6OhDWKmDQcEMQN6Ynw'
 
 async function saveTokenToServer(firebaseUser, fcmToken) {
   try {
